@@ -1,7 +1,9 @@
 {
   "name": "Book",
   "private": true,
-  "scripts": {},
+  "scripts": {
+    "dev": "turbo run dev"
+  },
   "devDependencies": {
     "@biomejs/biome": "2.4.9",
     "prettier": "^3.7.4",
