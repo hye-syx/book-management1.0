@@ -1,4 +1,5 @@
 import { AppSidebar } from '#/components/dashboard/app-sidebar';
+import { TableDemo } from '#/components/dashboard/book-list';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '#/components/ui/sidebar';
 import { Separator } from '@base-ui/react';
 import { createFileRoute } from '@tanstack/react-router'
@@ -35,10 +36,10 @@ function Dashboard() {
           </div>
         </header>
         <div className='flex flex-1 flex-col gap-4 p-4 pt-0'>
-         
-          <div className='min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min' />
+          <TableDemo />
+          {/* <div class  Name='min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min' /> */}
         </div>
-      </SidebarInset>
+      </SidebarInset> 
     </SidebarProvider>
   );
 }
