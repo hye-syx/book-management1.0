@@ -22,7 +22,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const [email, setEmail] = React.useState("test123@qq.com")
   const [password, setPassword] = React.useState("123456test")
   const [confirmPassword, setConfirmPassword] = React.useState("123456test")
-  const navigate = useNavigate({from: "/login"})
+  const navigate = useNavigate({from: "/signup"})
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     await authClient.signUp.email({
