@@ -14,6 +14,7 @@ import {
 } from "#/components/ui/field"
 import { Input } from "#/components/ui/input"
 import { authClient } from "#/lib/auth-client"
+import { useNavigate } from "@tanstack/react-router"
 import React from "react"
 
 export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
@@ -21,7 +22,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const [email, setEmail] = React.useState("test123@qq.com")
   const [password, setPassword] = React.useState("123456test")
   const [confirmPassword, setConfirmPassword] = React.useState("123456test")
-
+  const navigate = useNavigate({from: "/login"})
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     await authClient.signUp.email({
@@ -35,8 +36,9 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
             //show loading
         },
         onSuccess: (ctx) => {
+          // 官方文档：https://tanstack.com/router/v1/docs/guide/navigation
             //redirect to the dashboard or sign in page
-            
+            navigate({ to: '/login' });
         },
         onError: (ctx) => {
             // display the error message

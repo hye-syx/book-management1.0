@@ -73,7 +73,7 @@ export function LoginForm({
                 />
               </Field>
               <Field>
-                <div className="flex items-center">
+                {/* <div className="flex items-center">
                   <FieldLabel htmlFor="password">Password</FieldLabel>
                   <a
                     href="#"
@@ -81,7 +81,7 @@ export function LoginForm({
                   >
                     Forgot your password?
                   </a>
-                </div>
+                </div> */}
                 <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
               </Field>
               <Field>
