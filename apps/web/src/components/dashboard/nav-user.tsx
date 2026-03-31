@@ -20,6 +20,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "#/components/ui/sidebar"
+import { authClient } from "#/lib/auth-client"
+import { useNavigate } from "@tanstack/react-router"
 import { ChevronsUpDownIcon, SparklesIcon, BadgeCheckIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
 
 export function NavUser({
@@ -31,6 +33,7 @@ export function NavUser({
     avatar: string
   }
 }) {
+  const navigate = useNavigate({from: "/dashboard"})
   const { isMobile } = useSidebar()
   return (
     <SidebarMenu>
@@ -70,37 +73,13 @@ export function NavUser({
                   </div>
                 </div>
               </DropdownMenuLabel>
-            </DropdownMenuGroup>
+            </DropdownMenuGroup>   
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <SparklesIcon
-                />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheckIcon
-                />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCardIcon
-                />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <BellIcon
-                />
-                Notifications
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOutIcon
-              />
+            <DropdownMenuItem onClick={async () => {
+              await authClient.signOut()
+              navigate({to: '/login'})
+            }}>
+              <LogOutIcon />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
