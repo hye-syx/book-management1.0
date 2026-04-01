@@ -1,13 +1,15 @@
-import { createRoute, z } from '@hono/zod-openapi';
-import { bookSchema } from '@repo/db/types/book.type';
+import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { db } from '@repo/db';
 import { books } from '@repo/db/schema/book-schema';
-import { Context } from 'hono';
+import { bookSchema } from '@repo/db/types/book.type';
+import { hc } from 'hono/client';
 
+const app = new OpenAPIHono();
 //获取全部图书
-const listBookRoute = createRoute({
+export const listBookRoute = createRoute({
   method: 'get',
   path: '/books',
+  request: {},
   responses: {
     200: {
       content: {
@@ -19,8 +21,11 @@ const listBookRoute = createRoute({
     },
   },
 });
- const listBookHandler = async (c: Context) => {
+
+const route = app.openapi(listBookRoute, async (c) => {
   const listBook = await db.select().from(books);
   return c.json(listBook, 200);
-};
-export { listBookRoute, listBookHandler };
+});
+
+export default app;
+export type ListBookRouteType = typeof route;
