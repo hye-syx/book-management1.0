@@ -8,53 +8,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { listBookQuery } from '#/queries/ book.query';
+import { useQuery } from '@tanstack/react-query';
+import { Button } from '../ui/button';
 
-const invoices = [
-  {
-    invoice: 'INV001',
-    paymentStatus: 'Paid',
-    totalAmount: '$250.00',
-    paymentMethod: 'Credit Card',
-  },
-  {
-    invoice: 'INV002',
-    paymentStatus: 'Pending',
-    totalAmount: '$150.00',
-    paymentMethod: 'PayPal',
-  },
-  {
-    invoice: 'INV003',
-    paymentStatus: 'Unpaid',
-    totalAmount: '$350.00',
-    paymentMethod: 'Bank Transfer',
-  },
-  {
-    invoice: 'INV004',
-    paymentStatus: 'Paid',
-    totalAmount: '$450.00',
-    paymentMethod: 'Credit Card',
-  },
-  {
-    invoice: 'INV005',
-    paymentStatus: 'Paid',
-    totalAmount: '$550.00',
-    paymentMethod: 'PayPal',
-  },
-  {
-    invoice: 'INV006',
-    paymentStatus: 'Pending',
-    totalAmount: '$200.00',
-    paymentMethod: 'Bank Transfer',
-  },
-  {
-    invoice: 'INV007',
-    paymentStatus: 'Unpaid',
-    totalAmount: '$300.00',
-    paymentMethod: 'Credit Card',
-  },
-];
+
+
 
 export function TableDemo() {
+   const { data: books } = useQuery({
+    ...listBookQuery,
+   });
   return (
     <div className='rounded-lg border border-gray-200 overflow-hidden'>
       <Table className='min-full'>
@@ -66,33 +30,38 @@ export function TableDemo() {
             <TableHead>作者</TableHead>
             <TableHead>出版社</TableHead>
             <TableHead>出版时间</TableHead>
+            <TableHead>图书类别</TableHead>
             <TableHead>价格</TableHead>
             <TableHead>总量</TableHead>
             <TableHead>可借数量</TableHead>
             <TableHead>借阅状态</TableHead>
             <TableHead>录入时间</TableHead>
-            <TableHead>操作</TableHead>
+            <TableHead className='text-center'>操作</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {invoices.map((invoice) => (
-            <TableRow key={invoice.invoice}>
-              <TableCell className='font-medium'>{invoice.invoice}</TableCell>
-              <TableCell>{invoice.paymentStatus}</TableCell>
-              <TableCell>{invoice.paymentMethod}</TableCell>
-              <TableCell className='text-right'>
-                {invoice.totalAmount}
+          {books?.map((book) => (
+            <TableRow key={book.id}>
+              <TableCell className='font-medium'>{book.isbn}</TableCell>
+              <TableCell>{book.title}</TableCell>
+              <TableCell>{book.author}</TableCell>
+              <TableCell>{book.publisher}</TableCell>
+              <TableCell>{book.publicationDate}</TableCell>
+              <TableCell>{book.categoryId}</TableCell>
+              <TableCell>{book.price}</TableCell>
+              <TableCell>{book.total}</TableCell>
+              <TableCell>{book.available}</TableCell>
+              <TableCell>{book.status}</TableCell>
+              <TableCell>{book.createdAt}</TableCell>
+              <TableCell className='text-center'>
+                <Button >编辑</Button>
+                <Button >删除</Button>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
-        {/* <TableFooter>
-        <TableRow>
-          <TableCell colSpan={3}>Total</TableCell>
-          <TableCell className='text-right'>$2,500.00</TableCell>
-        </TableRow>
-      </TableFooter> */}
       </Table>
     </div>
   );
 }
+
