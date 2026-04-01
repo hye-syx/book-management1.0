@@ -8,14 +8,27 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { listBookQuery } from '#/queries/ book.query';
-import { useQuery } from '@tanstack/react-query';
+import { deleteBookMutation, listBookQuery } from '#/queries/ book.query';
+import { useMutation, useQuery ,useQueryClient} from '@tanstack/react-query';
 import { Button } from '../ui/button';
 
 
 
 
 export function TableDemo() {
+  const queryClient = useQueryClient();
+  //  删除图书
+  const deleteMutation=useMutation({
+    ...deleteBookMutation,
+    onSuccess:() => {
+      // 刷新列表
+      queryClient.invalidateQueries({ queryKey: ['books','all'] });
+    }
+  })
+  const handleDelete = (id: string) => {
+    deleteMutation.mutate(id);
+  };
+  //  获取图书列表
    const { data: books } = useQuery({
     ...listBookQuery,
    });
@@ -54,8 +67,11 @@ export function TableDemo() {
               <TableCell>{book.status}</TableCell>
               <TableCell>{book.createdAt}</TableCell>
               <TableCell className='text-center'>
-                <Button >编辑</Button>
-                <Button >删除</Button>
+                <Button>编辑</Button>
+                <Button onClick={() => {
+                  if (confirm('确定删除吗？')) {
+                        handleDelete(book.id);
+                      }}}>删除</Button>
               </TableCell>
             </TableRow>
           ))}
