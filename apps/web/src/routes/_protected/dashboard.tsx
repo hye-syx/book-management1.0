@@ -4,7 +4,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from '#/components/ui/s
 import { Separator } from '@base-ui/react';
 import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/dashboard')({
+export const Route = createFileRoute('/_protected/dashboard')({
   component: Dashboard,
 })
 
