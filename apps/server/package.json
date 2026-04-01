@@ -1,5 +1,8 @@
 {
-  "name": "server",
+  "name": "@book/server",
+  "exports": {
+    "./api/route": "./src/api/route.ts"
+  },
   "scripts": {
     "dev": "bun run --hot src/index.ts"
   },
