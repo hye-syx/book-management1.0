@@ -24,7 +24,7 @@ import {
 } from '#/components/ui/sidebar';
 
 // This is sample data.
-const data = {
+export const AppSidebarData = {
   user: {
    
     name: 'Admin',
@@ -43,21 +43,25 @@ const data = {
       title: '图书管理',
       url: '#',
       icon: <TerminalSquareIcon />,
+      type: 'single',
     },
     {
       title: '书籍录入',
       url: '#',
       icon: <BotIcon />,
+      type: 'single',
     },
     {
       title: '借阅申请',
       url: '#',
       icon: <BookOpenIcon />,
+      type: 'single',
     },
     {
       title: '系统设置',
-      url: '#',
+      // url: '#',
       icon: <Settings2Icon />,
+      type: 'group',
       items: [
         {
           title: '用户管理',
@@ -76,18 +80,18 @@ const data = {
   ],
   
 };
-
+export type AppSidebarDataType = typeof AppSidebarData;
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible='icon' {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <TeamSwitcher teams={AppSidebarData.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={AppSidebarData.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={AppSidebarData.user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
