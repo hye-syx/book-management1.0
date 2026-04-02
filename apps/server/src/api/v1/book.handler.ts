@@ -1,8 +1,8 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { db } from '@repo/db';
 import { books } from '@repo/db/schema/book-schema';
+import { updateBookSchema } from '@repo/db/types/update.type';
 import { bookSchema } from '@repo/db/types/book.type';
-
 import { eq } from 'drizzle-orm';
 
 import { getSession } from '../../lib/get-session';
@@ -56,7 +56,43 @@ export const deleteBookRoute = createRoute({
     },
   },
 });
-
+//编辑图书
+export const editBookRoute = createRoute({
+  method: 'put',
+  path: '/books/{id}',
+  request: {
+    params: z.object({
+      id: z.string(),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: updateBookSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: bookSchema,
+        },
+      },
+      description: '编辑图书',
+    },
+    401: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: '未登录',
+    },
+  },
+});
 export const bookApp = app
   .openapi(listBookRoute, async (c) => {
     const listBook = await db.select().from(books);
@@ -71,6 +107,19 @@ export const bookApp = app
     const { id } = c.req.param();
     await db.delete(books).where(eq(books.id, id));
     return c.json({ message: '删除成功' }, 200);
+  })
+  .openapi(editBookRoute, async (c) => {
+    const session = await getSession(c.req.raw.headers);
+    if (!session) {
+      return c.json({ message: '未登录' }, 401);
+    }
+
+    const { id } = c.req.param();
+    const body = await c.req.json();
+    const book = updateBookSchema.parse(body);
+
+   const [updated] = await db.update(books).set({...book, updatedAt: new Date()}).where(eq(books.id, id)).returning();
+    return c.json(updated, 200);
   });
 
 export type BookAppType = typeof bookApp;
