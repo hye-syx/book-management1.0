@@ -1,4 +1,20 @@
+import type { UpdateBookRequest } from '@repo/db/types/update.type';
 import { apiClient } from '@/lib/api-client';
+
+export const getBookQuery = (id: string) => ({
+  queryKey: ['book', id],
+  queryFn: async () => {
+    const response = await apiClient.books[':id'].$get({
+      param: { id },
+    });
+    if (!response.ok) {
+      throw new Error('获取图书失败');
+    }
+
+    return await response.json();
+  },
+});
+
 //获取全部图书
 export const listBookQuery = {
   queryKey: ['books', 'all'],
@@ -17,6 +33,17 @@ export const deleteBookMutation = {
   mutationFn: async (id: string) => {
     const response = await apiClient.books[':id'].$delete({
       param: { id },
+    });
+    return await response.json();
+  },
+};
+//修改图书
+export const updateBookMutation = {
+  mutationKey: ['books', 'update'],
+  mutationFn: async (id: string, book: UpdateBookRequest) => {
+    const response = await apiClient.books[':id'].$put({
+      param: { id },
+      json: book,
     });
     return await response.json();
   },

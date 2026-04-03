@@ -56,6 +56,36 @@ export const deleteBookRoute = createRoute({
     },
   },
 });
+//根据id查询图书
+export const getBookByIdRoute = createRoute({
+  method: 'get',
+  path: '/books/{id}',
+  request: {
+    params: z.object({
+      id: z.string(),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: bookSchema,
+        },
+      },
+      description: '获取图书',
+    },
+    401: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: '未登录',
+    },
+  },
+});
 //编辑图书
 export const editBookRoute = createRoute({
   method: 'put',
@@ -120,6 +150,11 @@ export const bookApp = app
 
    const [updated] = await db.update(books).set({...book, updatedAt: new Date()}).where(eq(books.id, id)).returning();
     return c.json(updated, 200);
+  })
+  .openapi(getBookByIdRoute, async (c) => {
+    const { id } = c.req.param();
+    const [book] = await db.select().from(books).where(eq(books.id, id));
+    return c.json(book, 200);
   });
 
 export type BookAppType = typeof bookApp;
