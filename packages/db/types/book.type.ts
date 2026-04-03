@@ -6,12 +6,12 @@ export const bookSchema = z.object({
   title: z.string(),
   author: z.string(),
   publisher: z.string(),
-  publicationDate: z.date(),
+  publicationDate: z.number(), // unix时间戳
   categoryId: z.string(),
   price: z.number(),
   total: z.number(),
   available: z.number(),
   status: z.enum(['在馆', '借出', '遗失', '损坏']).nullable(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  createdAt: z.number(), // unix时间戳
+  updatedAt: z.number(), // unix时间戳
 });

@@ -4,7 +4,7 @@ export const updateBookSchema = z.object({
   title: z.string().optional(),
   author: z.string().optional(),
   publisher: z.string().optional(),
-  publicationDate: z.coerce.date().optional(),
+  publicationDate: z.number().optional(), // unix时间戳
   categoryId: z.string().optional(),
   price: z.number().optional(),
   total: z.number().optional(),
