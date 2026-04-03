@@ -1,4 +1,16 @@
 import {
+  dataTagErrorSymbol,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { useEffect, useId, useState } from 'react';
+import {
+  deleteBookMutation,
+  getBookQuery,
+  listBookQuery,
+} from '#/queries/ book.query';
+import {
   Table,
   TableBody,
   TableCaption,
@@ -8,30 +20,50 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { deleteBookMutation, listBookQuery } from '#/queries/ book.query';
-import { useMutation, useQuery ,useQueryClient} from '@tanstack/react-query';
 import { Button } from '../ui/button';
-
-
-
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '../ui/dialog';
+import { Field, FieldGroup } from '../ui/field';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
 
 export function TableDemo() {
+  // 获取点击编辑时图书的id
+  const [editingBookId, setEditingBookId] = useState<string>('');
   const queryClient = useQueryClient();
   //  删除图书
-  const deleteMutation=useMutation({
+  const deleteMutation = useMutation({
     ...deleteBookMutation,
-    onSuccess:() => {
+    onSuccess: () => {
       // 刷新列表
-      queryClient.invalidateQueries({ queryKey: ['books','all'] });
-    }
-  })
+      queryClient.invalidateQueries({ queryKey: ['books', 'all'] });
+    },
+  });
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
   };
   //  获取图书列表
-   const { data: books } = useQuery({
+  const { data: books } = useQuery({
     ...listBookQuery,
-   });
+  });
+
   return (
     <div className='rounded-lg border border-gray-200 overflow-hidden'>
       <Table className='min-full'>
@@ -67,17 +99,210 @@ export function TableDemo() {
               <TableCell>{book.status}</TableCell>
               <TableCell>{book.createdAt}</TableCell>
               <TableCell className='text-center'>
-                <Button>编辑</Button>
-                <Button onClick={() => {
-                  if (confirm('确定删除吗？')) {
-                        handleDelete(book.id);
-                      }}}>删除</Button>
+                <Button
+                  onClick={() => {
+                    setEditingBookId(book.id);
+                  }}
+                >
+                  编辑
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (confirm('确定删除吗？')) {
+                      handleDelete(book.id);
+                    }
+                  }}
+                >
+                  删除
+                </Button>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+      <EditBookDialog
+        bookId={editingBookId}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingBookId('');
+          }
+        }}
+        open={editingBookId !== ''}
+      />
     </div>
   );
 }
 
+function EditBookDialog({
+  bookId,
+  open,
+  onOpenChange,
+}: {
+  bookId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const { data } = useQuery({
+    ...getBookQuery(bookId),
+    enabled: open && bookId !== '',
+  });
+  const [bookData, setBookData] = useState<typeof data>(undefined);
+  const formId = useId();
+  const getFieldId = (fieldName: string) => `${formId}-${fieldName}`;
+
+  useEffect(() => {
+    if (data) {
+      setBookData(data);
+    }
+  }, [data]);
+
+  if (!bookData) {
+    return null;
+  }
+
+  return (
+    <>
+      {/* 编辑图书弹窗 */}
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <form>
+          <DialogTrigger />
+          <DialogContent className='sm:max-w-xl'>
+            <DialogHeader>
+              <DialogTitle>修改图书</DialogTitle>
+              <DialogDescription>修改图书信息</DialogDescription>
+            </DialogHeader>
+            <FieldGroup className='grid grid-cols-2 gap-4'>
+              <Field>
+                <Label htmlFor={getFieldId('title')}>书名</Label>
+                <Input
+                  id={getFieldId('title')}
+                  name='title'
+                  value={bookData?.title || ''}
+                  onChange={(e) =>
+                    setBookData({ ...bookData, title: e.target.value })
+                  }
+                />
+              </Field>
+              <Field>
+                <Label htmlFor={getFieldId('author')}>作者</Label>
+                <Input
+                  id={getFieldId('author')}
+                  name='author'
+                  value={bookData?.author}
+                  onChange={(e) =>
+                    setBookData({ ...bookData, author: e.target.value })
+                  }
+                />
+              </Field>
+              <Field>
+                <Label htmlFor={getFieldId('publisher')}>出版社</Label>
+                <Input
+                  id={getFieldId('publisher')}
+                  name='publisher'
+                  value={bookData?.publisher}
+                  onChange={(e) =>
+                    setBookData({ ...bookData, publisher: e.target.value })
+                  }
+                />
+              </Field>
+              <Field>
+                <Label htmlFor={getFieldId('publishDate')}>出版日期</Label>
+                <Input
+                  id={getFieldId('publishDate')}
+                  name='publishDate'
+                  value={bookData?.publicationDate}
+                  onChange={(e) =>
+                    setBookData({
+                      ...bookData,
+                      publicationDate: e.target.value,
+                    })
+                  }
+                />
+              </Field>
+              <Field>
+                <Label htmlFor={getFieldId('category')}>图书类别</Label>
+                <Input
+                  id={getFieldId('category')}
+                  name='category'
+                  value={bookData?.categoryId}
+                  onChange={(e) =>
+                    setBookData({ ...bookData, categoryId: e.target.value })
+                  }
+                />
+              </Field>
+              <Field>
+                <Label htmlFor={getFieldId('price')}>价格</Label>
+                <Input
+                  id={getFieldId('price')}
+                  name='price'
+                  value={bookData?.price}
+                  onChange={(e) =>
+                    setBookData({ ...bookData, price: Number(e.target.value) })
+                  }
+                />
+              </Field>
+              <Field>
+                <Label htmlFor={getFieldId('total')}>总量</Label>
+                <Input
+                  id={getFieldId('total')}
+                  name='total'
+                  value={bookData?.total}
+                  onChange={(e) =>
+                    setBookData({ ...bookData, total: Number(e.target.value) })
+                  }
+                />
+              </Field>
+              <Field>
+                <Label htmlFor={getFieldId('available')}>可借数量</Label>
+                <Input
+                  id={getFieldId('available')}
+                  name='available'
+                  value={bookData?.available}
+                  onChange={(e) =>
+                    setBookData({
+                      ...bookData,
+                      available: Number(e.target.value),
+                    })
+                  }
+                />
+              </Field>
+              <Field className='col-span-2'>
+                <Label htmlFor={getFieldId('status')}>借阅状态</Label>
+                <Select
+                  value={bookData?.status || ''}
+                  onValueChange={(value) =>
+                    setBookData({
+                      ...bookData,
+                      status: value as '在馆' | '借出' | '遗失' | '损坏',
+                    })
+                  }
+                >
+                  <SelectTrigger id={getFieldId('status')} className='w-full'>
+                    <SelectValue placeholder='请选择借阅状态' />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>借阅状态</SelectLabel>
+
+                      <SelectItem value='在馆'>在馆</SelectItem>
+                      <SelectItem value='借出'>借出</SelectItem>
+                      <SelectItem value='遗失'>遗失</SelectItem>
+                      <SelectItem value='损坏'>损坏</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </Field>
+            </FieldGroup>
+            <DialogFooter>
+              <DialogClose
+                render={() => <Button variant='outline'>取消</Button>}
+              />
+              <Button type='submit'>Save changes</Button>
+            </DialogFooter>
+          </DialogContent>
+        </form>
+      </Dialog>
+    </>
+  );
+}

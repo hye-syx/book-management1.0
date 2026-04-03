@@ -15,7 +15,7 @@ import {
 import { Input } from "#/components/ui/input"
 import { authClient } from "#/lib/auth-client"
 import { useNavigate } from "@tanstack/react-router"
-import React from "react"
+import React, { useId } from "react"
 
 export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const [name, setName] = React.useState("HH")
@@ -38,7 +38,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
         onSuccess: (ctx) => {
           // 官方文档：https://tanstack.com/router/v1/docs/guide/navigation
             //redirect to the dashboard or sign in page
-            navigate({ to: '/login' });
+            navigate({ to: '/auth/login' });
         },
         onError: (ctx) => {
             // display the error message
@@ -60,12 +60,12 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
           <FieldGroup>
             <Field>
               <FieldLabel htmlFor="name">Full Name</FieldLabel>
-              <Input id="name" type="text" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} />
+              <Input id={useId()} type="text" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} />
             </Field>
             <Field>
               <FieldLabel htmlFor="email">Email</FieldLabel>
               <Input
-                id="email"
+                id={useId()}
                 type="email"
                 placeholder="m@example.com"
                 required
@@ -78,7 +78,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
             </Field>
             <Field>
               <FieldLabel htmlFor="password">Password</FieldLabel>
-              <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+              <Input id={useId()} type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
               <FieldDescription>
                 Must be at least 8 characters long.
               </FieldDescription>
@@ -87,7 +87,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
               <FieldLabel htmlFor="confirm-password">
                 Confirm Password
               </FieldLabel>
-              <Input id="confirm-password" type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+              <Input id={useId()} type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
               <FieldDescription>Please confirm your password.</FieldDescription>
             </Field>
             <FieldGroup>
