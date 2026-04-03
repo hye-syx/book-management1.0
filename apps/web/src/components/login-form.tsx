@@ -14,7 +14,7 @@ import {
   FieldLabel,
 } from "#/components/ui/field"
 import { Input } from "#/components/ui/input"
-import React from "react"
+import React, { useId } from "react"
 import { authClient } from "#/lib/auth-client"
 
 export function LoginForm({
@@ -64,7 +64,7 @@ export function LoginForm({
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
-                  id="email"
+                  id={useId()}
                   type="email"
                   placeholder="m@example.com"
                   required
@@ -82,7 +82,7 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div> */}
-                <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                <Input id={useId()} type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
               </Field>
               <Field>
                 <Button type="submit">Login</Button>
