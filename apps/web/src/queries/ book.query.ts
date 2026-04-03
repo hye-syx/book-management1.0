@@ -40,7 +40,7 @@ export const deleteBookMutation = {
 //修改图书
 export const updateBookMutation = {
   mutationKey: ['books', 'update'],
-  mutationFn: async (id: string, book: UpdateBookRequest) => {
+  mutationFn: async ({ id, book }: { id: string; book: UpdateBookRequest }) => {
     const response = await apiClient.books[':id'].$put({
       param: { id },
       json: book,
