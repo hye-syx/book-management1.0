@@ -4,8 +4,8 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { useEffect, useId, useState } from 'react';
 import dayjs from 'dayjs';
+import { useEffect, useId, useState } from 'react';
 import {
   deleteBookMutation,
   getBookQuery,
@@ -93,13 +93,17 @@ export function TableDemo() {
               <TableCell>{book.title}</TableCell>
               <TableCell>{book.author}</TableCell>
               <TableCell>{book.publisher}</TableCell>
-              <TableCell>{dayjs.unix(book.publicationDate).format('YYYY-MM-DD')}</TableCell>
+              <TableCell>
+                {dayjs.unix(book.publicationDate).format('YYYY-MM-DD')}
+              </TableCell>
               <TableCell>{book.categoryId}</TableCell>
               <TableCell>{book.price}</TableCell>
               <TableCell>{book.total}</TableCell>
               <TableCell>{book.available}</TableCell>
               <TableCell>{book.status}</TableCell>
-              <TableCell>{dayjs.unix(book.createdAt).format('YYYY-MM-DD HH:mm:ss')}</TableCell>
+              <TableCell>
+                {dayjs.unix(book.createdAt).format('YYYY-MM-DD HH:mm:ss')}
+              </TableCell>
               <TableCell className='text-center'>
                 <Button
                   onClick={() => {
@@ -151,26 +155,23 @@ function EditBookDialog({
   const [bookData, setBookData] = useState<typeof data>(undefined);
   const formId = useId();
   const getFieldId = (fieldName: string) => `${formId}-${fieldName}`;
- 
- 
+
   const queryClient = useQueryClient();
   const updateMutation = useMutation({
     ...updateBookMutation,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['books','all'],
+        queryKey: ['books', 'all'],
       });
       onOpenChange(false);
     },
   });
   const handleSave = () => {
     if (bookData) {
-      const { createdAt, updatedAt, publicationDate, ...reset } = bookData;
-      const publicationDateTimestamp = dayjs(publicationDate).unix();
+      const { createdAt, updatedAt, ...reset } = bookData;
       const bookDataToSave = {
         ...reset,
-        publicationDate: publicationDateTimestamp,
-      }
+      };
       updateMutation.mutate({
         id: bookId,
         book: bookDataToSave,
@@ -186,7 +187,6 @@ function EditBookDialog({
   if (!bookData) {
     return null;
   }
-
 
   return (
     <>
@@ -239,13 +239,24 @@ function EditBookDialog({
                   id={getFieldId('publishDate')}
                   name='publishDate'
                   type='date'
-                  value={typeof bookData?.publicationDate === 'number' ? dayjs.unix(bookData.publicationDate).format('YYYY-MM-DD') : bookData?.publicationDate}
-                  onChange={(e) =>
+                  value={
+                    typeof bookData?.publicationDate === 'number'
+                      ? dayjs
+                          .unix(bookData.publicationDate)
+                          .format('YYYY-MM-DD')
+                      : bookData?.publicationDate
+                  }
+                  onChange={(e) => {
+                    const dateValue = e.target.value;
+                    console.log('Input date:', dateValue);
+                    // 使用 dayjs 转换为 unix 时间戳（秒）
+                    const timestamp = dayjs(dateValue).unix();
+                    console.log('Converted timestamp:', timestamp);
                     setBookData({
                       ...bookData,
-                      publicationDate: Number(e.target.value),
-                    })
-                  }
+                      publicationDate: timestamp,
+                    });
+                  }}
                 />
               </Field>
               <Field>
@@ -325,9 +336,15 @@ function EditBookDialog({
             </FieldGroup>
             <DialogFooter>
               <DialogClose
-                render={() => <Button variant='outline' onClick={() => onOpenChange(false)}>取消</Button>}
+                render={() => (
+                  <Button variant='outline' onClick={() => onOpenChange(false)}>
+                    取消
+                  </Button>
+                )}
               />
-              <Button type='submit' onClick={handleSave} >保存</Button>
+              <Button type='submit' onClick={handleSave}>
+                保存
+              </Button>
             </DialogFooter>
           </DialogContent>
         </form>

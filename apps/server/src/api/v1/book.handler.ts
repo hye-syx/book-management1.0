@@ -4,6 +4,7 @@ import { books } from '@repo/db/schema/book-schema';
 import { updateBookSchema } from '@repo/db/types/update.type';
 import { bookSchema } from '@repo/db/types/book.type';
 import { eq } from 'drizzle-orm';
+import dayjs from 'dayjs';
 
 import { getSession } from '../../lib/get-session';
 
@@ -148,7 +149,7 @@ export const bookApp = app
     const body = await c.req.json();
     const book = updateBookSchema.parse(body);
 
-   const [updated] = await db.update(books).set({...book, updatedAt: new Date()}).where(eq(books.id, id)).returning();
+   const [updated] = await db.update(books).set({...book, updatedAt: dayjs().unix()}).where(eq(books.id, id)).returning();
     return c.json(updated, 200);
   })
   .openapi(getBookByIdRoute, async (c) => {
