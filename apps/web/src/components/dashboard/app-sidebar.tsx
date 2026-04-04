@@ -41,19 +41,19 @@ export const AppSidebarData = {
   navMain: [
     {
       title: '图书管理',
-      url: '#',
+      url: '/dashboard',
       icon: <TerminalSquareIcon />,
       type: 'single',
     },
     {
       title: '书籍录入',
-      url: '#',
+      url: '/add-book',
       icon: <BotIcon />,
       type: 'single',
     },
     {
       title: '借阅申请',
-      url: '#',
+      url: '/borrow-application',
       icon: <BookOpenIcon />,
       type: 'single',
     },

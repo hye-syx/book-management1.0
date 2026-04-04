@@ -15,6 +15,8 @@ import { Route as ProtectedRouteRouteImport } from './routes/_protected/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
+import { Route as ProtectedBorrowApplicationRouteImport } from './routes/_protected/borrow-application'
+import { Route as ProtectedAddBookRouteImport } from './routes/_protected/add-book'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -45,11 +47,24 @@ const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => ProtectedRouteRoute,
 } as any)
+const ProtectedBorrowApplicationRoute =
+  ProtectedBorrowApplicationRouteImport.update({
+    id: '/borrow-application',
+    path: '/borrow-application',
+    getParentRoute: () => ProtectedRouteRoute,
+  } as any)
+const ProtectedAddBookRoute = ProtectedAddBookRouteImport.update({
+  id: '/add-book',
+  path: '/add-book',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteRouteWithChildren
   '/signup': typeof SignupRoute
+  '/add-book': typeof ProtectedAddBookRoute
+  '/borrow-application': typeof ProtectedBorrowApplicationRoute
   '/dashboard': typeof ProtectedDashboardRoute
   '/auth/login': typeof AuthLoginRoute
 }
@@ -57,6 +72,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteRouteWithChildren
   '/signup': typeof SignupRoute
+  '/add-book': typeof ProtectedAddBookRoute
+  '/borrow-application': typeof ProtectedBorrowApplicationRoute
   '/dashboard': typeof ProtectedDashboardRoute
   '/auth/login': typeof AuthLoginRoute
 }
@@ -66,20 +83,38 @@ export interface FileRoutesById {
   '/_protected': typeof ProtectedRouteRouteWithChildren
   '/auth': typeof AuthRouteRouteWithChildren
   '/signup': typeof SignupRoute
+  '/_protected/add-book': typeof ProtectedAddBookRoute
+  '/_protected/borrow-application': typeof ProtectedBorrowApplicationRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
   '/auth/login': typeof AuthLoginRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/signup' | '/dashboard' | '/auth/login'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/signup'
+    | '/add-book'
+    | '/borrow-application'
+    | '/dashboard'
+    | '/auth/login'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/signup' | '/dashboard' | '/auth/login'
+  to:
+    | '/'
+    | '/auth'
+    | '/signup'
+    | '/add-book'
+    | '/borrow-application'
+    | '/dashboard'
+    | '/auth/login'
   id:
     | '__root__'
     | '/'
     | '/_protected'
     | '/auth'
     | '/signup'
+    | '/_protected/add-book'
+    | '/_protected/borrow-application'
     | '/_protected/dashboard'
     | '/auth/login'
   fileRoutesById: FileRoutesById
@@ -135,14 +170,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedDashboardRouteImport
       parentRoute: typeof ProtectedRouteRoute
     }
+    '/_protected/borrow-application': {
+      id: '/_protected/borrow-application'
+      path: '/borrow-application'
+      fullPath: '/borrow-application'
+      preLoaderRoute: typeof ProtectedBorrowApplicationRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
+    '/_protected/add-book': {
+      id: '/_protected/add-book'
+      path: '/add-book'
+      fullPath: '/add-book'
+      preLoaderRoute: typeof ProtectedAddBookRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
   }
 }
 
 interface ProtectedRouteRouteChildren {
+  ProtectedAddBookRoute: typeof ProtectedAddBookRoute
+  ProtectedBorrowApplicationRoute: typeof ProtectedBorrowApplicationRoute
   ProtectedDashboardRoute: typeof ProtectedDashboardRoute
 }
 
 const ProtectedRouteRouteChildren: ProtectedRouteRouteChildren = {
+  ProtectedAddBookRoute: ProtectedAddBookRoute,
+  ProtectedBorrowApplicationRoute: ProtectedBorrowApplicationRoute,
   ProtectedDashboardRoute: ProtectedDashboardRoute,
 }
 
