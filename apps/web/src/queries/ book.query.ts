@@ -1,6 +1,5 @@
-import type { UpdateBookRequest } from '@repo/db/types/update.type';
 import { apiClient } from '@/lib/api-client';
-
+import type { UpdateBookRequest } from '../../../../packages/types/update.type';
 export const getBookQuery = (id: string) => ({
   queryKey: ['book', id],
   queryFn: async () => {
