@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
-export const bookSchema = z.object({
-  id: z.number(),
+export const addBookSchema = z.object({
   isbn: z.string(),
   title: z.string(),
   author: z.string(),
@@ -10,8 +9,6 @@ export const bookSchema = z.object({
   categoryId: z.string(),
   price: z.number(),
   total: z.number(),
-  available: z.number(),
+//   available: z.number(),
   status: z.enum(['在馆', '借出', '遗失', '损坏']).nullable(),
-  createdAt: z.number(), // unix时间戳
-  updatedAt: z.number(), // unix时间戳
 });

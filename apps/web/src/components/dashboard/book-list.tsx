@@ -48,7 +48,7 @@ import {
 
 export function TableDemo() {
   // 获取点击编辑时图书的id
-  const [editingBookId, setEditingBookId] = useState<string>('');
+  const [editingBookId, setEditingBookId] = useState<number | null>(null);
   const queryClient = useQueryClient();
   //  删除图书
   const deleteMutation = useMutation({
@@ -58,7 +58,7 @@ export function TableDemo() {
       queryClient.invalidateQueries({ queryKey: ['books', 'all'] });
     },
   });
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: number) => {
     deleteMutation.mutate(id);
   };
   //  获取图书列表
@@ -121,6 +121,14 @@ export function TableDemo() {
                 >
                   删除
                 </Button>
+                <Button
+                  onClick={() => {
+                    // TODO: 实现借阅逻辑
+                    console.log('借阅:', book.id);
+                  }}
+                >
+                  借阅
+                </Button>
               </TableCell>
             </TableRow>
           ))}
@@ -130,10 +138,10 @@ export function TableDemo() {
         bookId={editingBookId}
         onOpenChange={(open) => {
           if (!open) {
-            setEditingBookId('');
+            setEditingBookId(null);
           }
         }}
-        open={editingBookId !== ''}
+        open={editingBookId !== null}
       />
     </div>
   );
@@ -144,13 +152,13 @@ function EditBookDialog({
   open,
   onOpenChange,
 }: {
-  bookId: string;
+  bookId: number | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
   const { data } = useQuery({
-    ...getBookQuery(bookId),
-    enabled: open && bookId !== '',
+    ...getBookQuery(bookId!),
+    enabled: open && bookId !== null,
   });
   const [bookData, setBookData] = useState<typeof data>(undefined);
   const formId = useId();
@@ -173,7 +181,7 @@ function EditBookDialog({
         ...reset,
       };
       updateMutation.mutate({
-        id: bookId,
+        id: bookId!,
         book: bookDataToSave,
       });
     }

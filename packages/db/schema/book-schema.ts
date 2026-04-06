@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 
 export const bookStatusEnum = pgEnum("book_status", ["在馆", "借出", "遗失", "损坏"]);
 export const books = pgTable("books", {
-  id: text("id").primaryKey(),
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   isbn: text("isbn").unique().notNull(),//ISBN编号
   title: text("title").notNull(),//书名
   author: text("author").notNull(),//作者
