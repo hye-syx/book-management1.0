@@ -11,7 +11,7 @@ import {
   getBookQuery,
   listBookQuery,
   updateBookMutation,
-} from '#/queries/ book.query';
+} from '#/queries/book.query';
 import {
   Table,
   TableBody,
@@ -89,25 +89,25 @@ export function TableDemo() {
         <TableBody>
           {books?.map((book) => (
             <TableRow key={book.id}>
-              <TableCell className='font-medium'>{book.isbn}</TableCell>
-              <TableCell>{book.title}</TableCell>
-              <TableCell>{book.author}</TableCell>
-              <TableCell>{book.publisher}</TableCell>
+              <TableCell className='font-medium'>{book.books.isbn}</TableCell>
+              <TableCell>{book.books.title}</TableCell>
+              <TableCell>{book.books.author}</TableCell>
+              <TableCell>{book.books.publisher}</TableCell>
               <TableCell>
-                {dayjs.unix(book.publicationDate).format('YYYY-MM-DD')}
+                {dayjs.unix(book.books.publicationDate).format('YYYY-MM-DD')}
               </TableCell>
-              <TableCell>{book.categoryId}</TableCell>
-              <TableCell>{book.price}</TableCell>
-              <TableCell>{book.total}</TableCell>
-              <TableCell>{book.available}</TableCell>
-              <TableCell>{book.status}</TableCell>
+              <TableCell>{book.book_category.name}</TableCell>
+              <TableCell>{book.books.price}</TableCell>
+              <TableCell>{book.books.total}</TableCell>
+              <TableCell>{book.books.available}</TableCell>
+              <TableCell>{book.books.status}</TableCell>
               <TableCell>
-                {dayjs.unix(book.createdAt).format('YYYY-MM-DD HH:mm:ss')}
+                {dayjs.unix(book.books.createdAt).format('YYYY-MM-DD HH:mm:ss')}
               </TableCell>
               <TableCell className='text-center'>
                 <Button
                   onClick={() => {
-                    setEditingBookId(book.id);
+                    setEditingBookId(book.books.id);
                   }}
                 >
                   编辑
@@ -115,7 +115,7 @@ export function TableDemo() {
                 <Button
                   onClick={() => {
                     if (confirm('确定删除吗？')) {
-                      handleDelete(book.id);
+                      handleDelete(book.books.id);
                     }
                   }}
                 >
@@ -124,7 +124,7 @@ export function TableDemo() {
                 <Button
                   onClick={() => {
                     // TODO: 实现借阅逻辑
-                    console.log('借阅:', book.id);
+                    console.log('借阅:', book.books.id);
                   }}
                 >
                   借阅
@@ -272,9 +272,9 @@ function EditBookDialog({
                 <Input
                   id={getFieldId('category')}
                   name='category'
-                  value={bookData?.categoryId}
+                  value={bookData?.categoryName}
                   onChange={(e) =>
-                    setBookData({ ...bookData, categoryId: e.target.value })
+                    setBookData({ ...bookData, categoryName: e.target.value })
                   }
                 />
               </Field>

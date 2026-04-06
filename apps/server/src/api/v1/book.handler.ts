@@ -1,6 +1,6 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { db } from '@repo/db';
-import { books } from '@repo/db/schema/book-schema';
+import { bookCategory, books } from '@repo/db/schema/book-schema';
 import { bookSchema } from '@repo/types/book.type';
 import dayjs from 'dayjs';
 import { eq } from 'drizzle-orm';
@@ -19,7 +19,9 @@ export const listBookRoute = createRoute({
     200: {
       content: {
         'application/json': {
-          schema: z.array(bookSchema),
+          schema: z.array(bookSchema.extend({
+            categoryName: z.string(),
+          })),
         },
       },
       description: '获取全部图书',
@@ -133,16 +135,7 @@ export const createBookRoute = createRoute({
     body: {
       content: {
         'application/json': {
-          schema: z.object({
-            isbn: z.string(),
-            title: z.string(),
-            author: z.string(),
-            publisher: z.string(),
-            publicationDate: z.number(),
-            categoryId: z.string(),
-            price: z.number(),
-            total: z.number(),
-          }),
+          schema: addBookSchema,
         },
       },
     }
@@ -176,7 +169,10 @@ export const createBookRoute = createRoute({
 });
 export const bookApp = app
   .openapi(listBookRoute, async (c) => {
-    const listBook = await db.select().from(books);
+    const listBook = await db
+      .select()
+      .from(books)
+      .leftJoin(bookCategory, eq(books.categoryId, bookCategory.id));
     return c.json(listBook, 200);
   })
   .openapi(deleteBookRoute, async (c) => {
