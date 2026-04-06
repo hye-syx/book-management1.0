@@ -1,14 +1,17 @@
 import { apiClient } from '@/lib/api-client';
 import type { UpdateBookRequest } from '../../../../packages/types/update.type';
+import type { AddBookRequest } from '../../../../packages/types/addBook.type';
+
+// 获取单个图书
 export const getBookQuery = (id: number) => ({
   queryKey: ['book', id],
   queryFn: async () => {
     const response = await apiClient.books[':id'].$get({
       param: { id: String(id) },
     });
-    if (!response.ok) {
-      throw new Error('获取图书失败');
-    }
+    // if (!response.ok) {
+    //   throw new Error('获取图书失败');
+    // }
 
     return await response.json();
   },
@@ -46,4 +49,14 @@ export const updateBookMutation = {
     });
     return await response.json();
   },
+};
+// 增加单本图书
+export const addBookMutation = {
+  mutationKey: ['books', 'add'],
+  mutationFn: async (book: AddBookRequest) => {
+    const response = await apiClient.books.$post({
+      json: book,
+    });
+    return await response.json();
+  }
 };

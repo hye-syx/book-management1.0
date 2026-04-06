@@ -12,3 +12,4 @@ export const addBookSchema = z.object({
 //   available: z.number(),
   status: z.enum(['在馆', '借出', '遗失', '损坏']).nullable(),
 });
+export type AddBookRequest = z.infer<typeof addBookSchema>;

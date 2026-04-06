@@ -15,3 +15,5 @@ export const bookSchema = z.object({
   createdAt: z.number(), // unix时间戳
   updatedAt: z.number(), // unix时间戳
 });
+
+export type Book = z.infer<typeof bookSchema>;
