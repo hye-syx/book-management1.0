@@ -2,6 +2,7 @@ import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { db } from '@repo/db';
 import { bookCategory, books } from '@repo/db/schema/book-schema';
 import { bookSchema } from '@repo/types/book.type';
+import { categorySchema } from '@repo/types/category.type';
 import dayjs from 'dayjs';
 import { eq } from 'drizzle-orm';
 import { updateBookSchema } from '@repo/types/update.type';
@@ -73,7 +74,9 @@ export const getBookByIdRoute = createRoute({
     200: {
       content: {
         'application/json': {
-          schema: bookSchema,
+          schema: bookSchema.extend({
+            categoryName: z.string(),
+          }),
         },
       },
       description: '获取图书',
@@ -167,6 +170,22 @@ export const createBookRoute = createRoute({
     },
   },
 });
+// 查询所有分类信息
+export const listCategoryRoute = createRoute({
+  method: 'get',
+  path: '/categories',
+  request: {},
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.array(categorySchema),
+        },
+      },
+      description: '获取全部分类',
+    },
+  },
+});
 export const bookApp = app
   .openapi(listBookRoute, async (c) => {
     const listBook = await db
@@ -204,8 +223,12 @@ export const bookApp = app
   })
   .openapi(getBookByIdRoute, async (c) => {
     const { id } = c.req.valid('param');
-    const [book] = await db.select().from(books).where(eq(books.id, id));
-    return c.json(book, 200);
+    const [book] = await db.select().from(books).leftJoin(bookCategory, eq(books.categoryId,bookCategory.id)).where(eq(books.id, id));
+    const result ={
+      ...book.books,
+      categoryName:book.book_category?.name||'',
+    }
+    return c.json(result, 200);
   })
   .openapi(createBookRoute, async (c) => {
     const session = await getSession(c.req.raw.headers);
@@ -229,6 +252,10 @@ export const bookApp = app
     }
     const [created] = await db.insert(books).values({ ...book, createdAt: dayjs().unix(), updatedAt: dayjs().unix(), available }).returning();
     return c.json(created, 200);
+  })
+  .openapi(listCategoryRoute, async (c) => {
+    const categories = await db.select().from(bookCategory);
+    return c.json(categories, 200);
   });
   
 

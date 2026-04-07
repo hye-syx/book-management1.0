@@ -60,3 +60,11 @@ export const addBookMutation = {
     return await response.json();
   }
 };
+//
+export const listBookByCategoryQuery = {
+  queryKey: ['category', 'list'],
+  queryFn: async () => {
+    const response = await apiClient.categories.$get();
+    return await response.json();
+  }
+};
