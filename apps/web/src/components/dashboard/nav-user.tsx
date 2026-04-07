@@ -77,7 +77,7 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={async () => {
               await authClient.signOut()
-              navigate({to: '/login'})
+              navigate({to: '/auth/login'})
             }}>
               <LogOutIcon />
               Log out
