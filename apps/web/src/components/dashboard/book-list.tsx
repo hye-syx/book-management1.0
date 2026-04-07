@@ -6,9 +6,11 @@ import {
 } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { useEffect, useId, useState } from 'react';
+import { useListCategory } from '#/hooks/use-category';
 import {
   deleteBookMutation,
   getBookQuery,
+  listBookByCategoryQuery,
   listBookQuery,
   updateBookMutation,
 } from '#/queries/book.query';
@@ -22,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import type { categoryType } from '../../../../../packages/types/category.type';
 import { Button } from '../ui/button';
 import {
   Dialog,
@@ -160,7 +163,8 @@ function EditBookDialog({
     ...getBookQuery(bookId!),
     enabled: open && bookId !== null,
   });
-  const [bookData, setBookData] = useState<typeof data>(undefined);
+  const { data: categoryData } = useListCategory()
+ const [bookData, setBookData] = useState<typeof data>(undefined);
   const formId = useId();
   const getFieldId = (fieldName: string) => `${formId}-${fieldName}`;
 
@@ -269,14 +273,38 @@ function EditBookDialog({
               </Field>
               <Field>
                 <Label htmlFor={getFieldId('category')}>图书类别</Label>
-                <Input
+                <Select
+                  value={bookData?.categoryId|| ''}
+                  onValueChange={(value) =>
+                    setBookData({
+                      ...bookData,
+                      categoryId: value,
+                    })
+                  }
+                >
+                  <SelectTrigger className='w-[180px]'>
+                    <SelectValue>
+                     {categoryData?.find((category) => category.id === bookData?.categoryId)?.name || '请选择类别'}
+                      </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {categoryData?.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                {/* <Input
                   id={getFieldId('category')}
                   name='category'
                   value={bookData?.categoryName}
                   onChange={(e) =>
                     setBookData({ ...bookData, categoryName: e.target.value })
                   }
-                />
+                /> */}
               </Field>
               <Field>
                 <Label htmlFor={getFieldId('price')}>价格</Label>
