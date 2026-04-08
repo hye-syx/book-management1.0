@@ -1,15 +1,8 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { useEffect, useId, useState } from 'react';
 import { useListCategory } from '#/hooks/use-category';
-import {
-  getBookQuery,
-  updateBookMutation,
-} from '#/queries/book.query';
+import { getBookQuery, updateBookMutation } from '#/queries/book.query';
 import { Button } from '../ui/button';
 import {
   Dialog,
@@ -89,7 +82,6 @@ export function EditBookDialog({
       {/* 编辑图书弹窗 */}
       <Dialog open={open} onOpenChange={onOpenChange}>
         <form onSubmit={(e) => e.preventDefault()}>
-          <DialogTrigger />
           <DialogContent className='sm:max-w-xl'>
             <DialogHeader>
               <DialogTitle>修改图书</DialogTitle>
