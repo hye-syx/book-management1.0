@@ -7,4 +7,4 @@ export const applicationDialogSchema = z.object({
   returnDate: z.number(),
   status: z.enum(['待审核', '已批准', '已拒绝', '已取消']).nullable(),
 });
-export type ApplicationDialogSchema = z.infer<typeof applicationDialogSchema>;
+export type ApplicationDialogRequest = z.infer<typeof applicationDialogSchema>;

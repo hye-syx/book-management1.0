@@ -1,5 +1,10 @@
 import { useForm } from '@tanstack/react-form';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import dayjs from 'dayjs';
 import { toast } from 'sonner';
+import z from 'zod';
+import { addApplicationMutation } from '#/queries/application.query';
+import { getBookQuery } from '#/queries/book.query';
 import {
   Field,
   FieldError,
@@ -7,16 +12,13 @@ import {
   FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import z from 'zod';
-import { useQuery } from '@tanstack/react-query';
-import { getBookQuery } from '#/queries/book.query';
+import { Button } from '../ui/button';
 
 const formSchema = z.object({
-  userName: z.string(),
-  bookTitle: z
-    .string()
-    .min(20, 'Description must be at least 20 characters.')
-    .max(100, 'Description must be at most 100 characters.'),
+  userId: z.string().min(1, 'User ID is required'),
+  bookId: z.number().min(1, 'Book ID is required'),
+  userName: z.string().min(1, 'User name is required'),
+  bookTitle: z.string().min(1, 'Book title is required'),
   borrowDate: z.string().min(1, 'Borrow date is required'),
   returnDate: z.string().min(1, 'Return date is required'),
 });
@@ -25,16 +27,26 @@ export function BugReportForm({
   bookId,
   userId,
   userName,
+  onOpenChange,
 }: {
   bookId: number;
   userId: string;
   userName: string;
+  onOpenChange: (open: boolean) => void;
 }) {
-    const {data:books} = useQuery({
-        ...getBookQuery(bookId),
-    });
+  const { data: books } = useQuery({
+    ...getBookQuery(bookId),
+  });
+  const addMutation = useMutation({
+    ...addApplicationMutation,
+    onSuccess: () => {
+      onOpenChange(false);
+    },
+  });
   const form = useForm({
     defaultValues: {
+      userId: userId,
+      bookId: bookId,
       userName: userName,
       bookTitle: books?.title || '',
       borrowDate: '',
@@ -58,6 +70,15 @@ export function BugReportForm({
           '--border-radius': 'calc(var(--radius)  + 4px)',
         } as React.CSSProperties,
       });
+      const applicationData = {
+        userId: value.userId,
+        bookId: value.bookId,
+        borrowDate: dayjs(value.borrowDate).unix(),
+        returnDate: dayjs(value.returnDate).unix(),
+        status: '待审核' as const,
+      };
+      console.log('applicationData', applicationData);
+      addMutation.mutate(applicationData);
     },
   });
 
@@ -164,7 +185,22 @@ export function BugReportForm({
           }}
         </form.Field>
       </FieldGroup>
+      <div className='flex justify-end gap-2 mt-8'>
+        <Button
+          type='button'
+          variant='outline'
+          onClick={() => onOpenChange(false)}
+        >
+          取消
+        </Button>
+        <Button
+          type='submit'
+          form='bug-report-form'
+          onClick={() => form.handleSubmit()}
+        >
+          提交申请
+        </Button>
+      </div>
     </form>
-    
   );
 }

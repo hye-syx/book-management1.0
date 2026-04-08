@@ -28,22 +28,13 @@ export function ApplicationBookDialog({
         <DialogHeader>
           <DialogTitle>请填写申请信息</DialogTitle>
           <DialogDescription>填写借阅申请后提交审核。</DialogDescription>
-          <DialogDescription>
-            <BugReportForm
-              bookId={bookId!}
-              userName={userName}
-              userId={userId}
-            />
-          </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
-          <Button variant='outline' onClick={() => onOpenChange(false)}>
-            取消
-          </Button>
-          <Button type='submit' form='borrow-application-form'>
-            提交申请
-          </Button>
-        </DialogFooter>
+        <BugReportForm
+          bookId={bookId!}
+          userName={userName}
+          userId={userId}
+          onOpenChange={onOpenChange}
+        />
       </DialogContent>
     </Dialog>
   );

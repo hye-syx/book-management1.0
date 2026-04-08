@@ -11,8 +11,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  DialogTitle
 } from '../ui/dialog';
 import { Field, FieldGroup } from '../ui/field';
 import { Input } from '../ui/input';
