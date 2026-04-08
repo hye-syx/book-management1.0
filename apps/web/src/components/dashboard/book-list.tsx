@@ -1,14 +1,8 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import {
-  deleteBookMutation,
-  listBookQuery, 
-} from '#/queries/book.query';
+import { authClient } from '#/lib/auth-client';
+import { deleteBookMutation, listBookQuery } from '#/queries/book.query';
 import {
   Table,
   TableBody,
@@ -17,16 +11,25 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { ApplicationBookDialog } from '../borrow-application/application-book-dialog';
 import { Button } from '../ui/button';
 import { EditBookDialog } from './edit-book-dialog';
-import { ApplicationBookDialog } from '../borrow-application/application-book-dialog';
-import { authClient } from '#/lib/auth-client';
 
 export function TableDemo() {
   // 获取点击编辑时图书的id
   const [editingBookId, setEditingBookId] = useState<number | null>(null);
-  const [applicationBookId, setApplicationBookId] = useState<number | null>(null);
-  const {data:session}=authClient.useSession();
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [applicationDialogOpen,setApplicationDialogOpen]= useState(false);
+  const [applicationBookId, setApplicationBookId] = useState<number | null>(
+    null,
+  );
+  const { data: session } = authClient.useSession();
+  const handleApplicationClose = (open: boolean, bookId?: number) => {
+    setApplicationDialogOpen(open);
+    if (bookId) {
+      setApplicationBookId(bookId);
+    }
+  };
   const queryClient = useQueryClient();
   //  删除图书
   const deleteMutation = useMutation({
@@ -86,6 +89,7 @@ export function TableDemo() {
                 <Button
                   onClick={() => {
                     setEditingBookId(book.books.id);
+                    setEditDialogOpen(true);
                   }}
                 >
                   编辑
@@ -101,7 +105,9 @@ export function TableDemo() {
                 </Button>
                 <Button
                   onClick={() => {
-                    setApplicationBookId(book.books.id);
+                    // setApplicationBookId(book.books.id);
+                    // setApplicationDialogOpen(true);
+                    handleApplicationClose(true, book.books.id);
                   }}
                 >
                   借阅
@@ -114,25 +120,19 @@ export function TableDemo() {
       <EditBookDialog
         bookId={editingBookId}
         onOpenChange={(open) => {
-          if (!open) {
-            setEditingBookId(null);
-          }
+          setEditDialogOpen(open);
         }}
-        open={editingBookId !== null}
+        open={editDialogOpen}
       />
-      <ApplicationBookDialog 
+      <ApplicationBookDialog
         bookId={applicationBookId}
         onOpenChange={(open) => {
-          if (!open) {
-            setApplicationBookId(null);
-          }
+          setApplicationDialogOpen(open);
         }}
-        open={applicationBookId !== null}
+        open={applicationDialogOpen}
         userId={session?.user?.id || ''}
         userName={session?.user?.name || ''}
       />
     </div>
   );
 }
-
-
