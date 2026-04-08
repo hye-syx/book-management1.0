@@ -19,10 +19,14 @@ import {
 } from '@/components/ui/table';
 import { Button } from '../ui/button';
 import { EditBookDialog } from './edit-book-dialog';
+import { ApplicationBookDialog } from '../borrow-application/application-book-dialog';
+import { authClient } from '#/lib/auth-client';
 
 export function TableDemo() {
   // 获取点击编辑时图书的id
   const [editingBookId, setEditingBookId] = useState<number | null>(null);
+  const [applicationBookId, setApplicationBookId] = useState<number | null>(null);
+  const {data:session}=authClient.useSession();
   const queryClient = useQueryClient();
   //  删除图书
   const deleteMutation = useMutation({
@@ -97,8 +101,7 @@ export function TableDemo() {
                 </Button>
                 <Button
                   onClick={() => {
-                    // TODO: 实现借阅逻辑
-                    console.log('借阅:', book.books.id);
+                    setApplicationBookId(book.books.id);
                   }}
                 >
                   借阅
@@ -116,6 +119,17 @@ export function TableDemo() {
           }
         }}
         open={editingBookId !== null}
+      />
+      <ApplicationBookDialog 
+        bookId={applicationBookId}
+        onOpenChange={(open) => {
+          if (!open) {
+            setApplicationBookId(null);
+          }
+        }}
+        open={applicationBookId !== null}
+        userId={session?.user?.id || ''}
+        userName={session?.user?.name || ''}
       />
     </div>
   );
