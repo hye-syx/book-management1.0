@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import type { categoryType } from "../../../../packages/types/category.type";
+import type { CategoryType } from "@repo/types";
 import { listBookByCategoryQuery } from "#/queries/book.query";
 
 
 export function useListCategory(){
-    return useQuery<categoryType[]>(listBookByCategoryQuery)
+    return useQuery<CategoryType.categoryType[]>(listBookByCategoryQuery)
 }
 export type UseListCategoryResult = ReturnType<typeof useListCategory>;

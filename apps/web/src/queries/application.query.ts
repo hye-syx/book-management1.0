@@ -1,5 +1,5 @@
 import { apiClient } from "#/lib/api-client";
-import type { ApplicationDialogRequest } from '../../../../packages/types/application-dialog.type';
+import type { ApplicationDialogType } from "@repo/types";
 
 // 获取所有图书的申请
 export const listApplicationQuery = {
@@ -12,7 +12,7 @@ export const listApplicationQuery = {
 // 新增申请
 export const addApplicationMutation = {
   mutationKey: ['applications', 'add'],
-  mutationFn: async (data: ApplicationDialogRequest) => {
+  mutationFn: async (data: ApplicationDialogType.ApplicationDialogRequest) => {
     const response = await apiClient.applications.$post({
       json: data,
     });

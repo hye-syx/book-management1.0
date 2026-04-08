@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
-
+import type {BookType} from '@repo/types';
 export function EditBookDialog({
   bookId,
   open,
@@ -40,7 +40,7 @@ export function EditBookDialog({
     enabled: open && bookId !== null,
   });
   const { data: categoryData } = useListCategory();
-  const [bookData, setBookData] = useState<typeof data>(undefined);
+  const [bookData, setBookData] = useState<BookType.Book | undefined>(undefined);
   const formId = useId();
   const getFieldId = (fieldName: string) => `${formId}-${fieldName}`;
 

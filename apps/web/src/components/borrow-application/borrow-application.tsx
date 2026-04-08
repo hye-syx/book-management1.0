@@ -13,10 +13,10 @@ import {
 } from '@/components/ui/table';
 import { Button } from '../ui/button';
 import { listApplicationQuery } from '#/queries/application.query';
-import type { Application } from '../../../../../packages/types/application.type';
+import type { ApplicationType } from '@repo/types';
 
 export function BorrowApplication() {
-  const { data: applications } = useQuery<Application[]>(listApplicationQuery);
+  const { data: applications } = useQuery<ApplicationType.Application[]>(listApplicationQuery);
   return (
     <div className='rounded-lg border border-gray-200 overflow-hidden'>
       <Table className='min-full'>
@@ -58,15 +58,6 @@ export function BorrowApplication() {
           ))}
         </TableBody>
       </Table>
-      {/* <EditBookDialog
-        bookId={editingBookId}
-        onOpenChange={(open) => {
-          if (!open) {
-            setEditingBookId(null);
-          }
-        }}
-        open={editingBookId !== null}
-      /> */}
     </div>
   );
 }

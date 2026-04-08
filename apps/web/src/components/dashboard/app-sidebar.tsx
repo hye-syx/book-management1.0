@@ -1,18 +1,12 @@
 import {
-  AudioLinesIcon,
   BookOpenIcon,
   BotIcon,
-  FrameIcon,
   GalleryVerticalEndIcon,
-  MapIcon,
-  PieChartIcon,
   Settings2Icon,
-  TerminalIcon,
   TerminalSquareIcon,
 } from 'lucide-react';
 import * as React from 'react';
 import { NavMain } from '#/components/dashboard/nav-main';
-import { NavProjects } from '#/components/dashboard/nav-projects';
 import { NavUser } from '#/components/dashboard/nav-user';
 import { TeamSwitcher } from '#/components/dashboard/team-switcher';
 import {
