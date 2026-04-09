@@ -1,8 +1,11 @@
-import {
-  useQuery,
-} from '@tanstack/react-query';
+import type { ApplicationType } from '@repo/types';
+import type { ApplicationReviewRequest } from '@repo/types/applicationReview.type';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
-
+import {
+  listApplicationQuery,
+  reviewApplicationMutation,
+} from '#/queries/application.query';
 import {
   Table,
   TableBody,
@@ -12,11 +15,25 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '../ui/button';
-import { listApplicationQuery } from '#/queries/application.query';
-import type { ApplicationType } from '@repo/types';
 
 export function BorrowApplication() {
-  const { data: applications } = useQuery<ApplicationType.Application[]>(listApplicationQuery);
+  const { data: applications } =
+    useQuery<ApplicationType.Application[]>(listApplicationQuery);
+  // 审批
+  const queryClient = useQueryClient();
+  const reviewMutation = useMutation({
+    ...reviewApplicationMutation,
+    onSuccess: () => {
+      // 刷新列表
+      queryClient.invalidateQueries({ queryKey: ['applications', 'all'] });
+    },
+  });
+  const handelReview = (
+    id: number,
+    status: ApplicationReviewRequest['status'],
+  ) => {
+    reviewMutation.mutate({ id, status });
+  };
   return (
     <div className='rounded-lg border border-gray-200 overflow-hidden'>
       <Table className='min-full'>
@@ -37,20 +54,39 @@ export function BorrowApplication() {
               <TableCell>{application.userName}</TableCell>
               <TableCell>{application.bookTitle}</TableCell>
               <TableCell>
-                {dayjs.unix(application.borrowDate).format('YYYY-MM-DD HH:mm:ss')}
+                {dayjs
+                  .unix(application.borrowDate)
+                  .format('YYYY-MM-DD HH:mm:ss')}
               </TableCell>
               <TableCell>
-                {dayjs.unix(application.returnDate).format('YYYY-MM-DD HH:mm:ss')}
+                {dayjs
+                  .unix(application.returnDate)
+                  .format('YYYY-MM-DD HH:mm:ss')}
               </TableCell>
               <TableCell>{application.status}</TableCell>
               <TableCell className='text-center'>
-                <Button>
+                <Button
+                  disabled={application.status !== '待审核'}
+                  onClick={() => {
+                    handelReview(application.id, '已批准');
+                  }}
+                >
                   同意
                 </Button>
-                <Button>
-                  拒绝  
+                <Button
+                  disabled={application.status !== '待审核'}
+                  onClick={() => {
+                    handelReview(application.id, '已拒绝');
+                  }}
+                >
+                  拒绝
                 </Button>
-                <Button>
+                <Button
+                  disabled={application.status !== '待审核'}
+                  onClick={() => {
+                    handelReview(application.id, '已取消');
+                  }}
+                >
                   取消申请
                 </Button>
               </TableCell>
