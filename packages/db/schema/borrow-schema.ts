@@ -22,6 +22,7 @@ export const borrowApplications = pgTable('borrow_applications', {
     .notNull(), //申请借阅图书ID
   borrowDate: integer('borrow_date').notNull(), //申请借阅日期
   returnDate: integer('return_date').notNull(), //申请归还日期
+  borrowTotal: integer('borrow_total').notNull(), //申请借阅总数
   status: borrowApplicationStatusEnum('status').default("待审核"), //申请状态
   createdAt: integer('created_at').$defaultFn(() => dayjs().unix()).notNull(), //创建时间
   updatedAt: integer('updated_at')
@@ -45,6 +46,7 @@ export const borrowRecords = pgTable("borrow_records", {
     returnDate: integer("return_date").notNull(),//应归还日期
     actualReturnDate: integer("actual_return_date"),//实际归还日期
     overdueDays: integer("overdue_days"),//逾期天数
+    borrowTotal: integer("borrow_total").notNull(),//借阅总数
     status: borrowStatusEnum("status").default("借阅中").notNull(),//借阅状态
     createdAt: integer("created_at").$defaultFn(() => dayjs().unix()).notNull(),//创建时间
     updatedAt: integer("updated_at")
@@ -64,6 +66,7 @@ export const renewalRecords = pgTable("renewal_records", {
     bookId: integer("book_id").references(() => books.id,{ onDelete:"cascade" }).notNull(),//续借图书ID
     borrowDate: integer("borrow_date").notNull(),//续借日期
     returnDate: integer("return_date").notNull(),//续借归还日期
+    borrowTotal: integer("borrow_total").notNull(),//续借总数
     status: text("status").notNull(),//续借状态
     createdAt: integer("created_at").$default(()=>dayjs().unix()).notNull(),//创建时间
     updatedAt: integer("updated_at")

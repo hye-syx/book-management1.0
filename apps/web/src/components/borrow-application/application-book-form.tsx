@@ -1,5 +1,5 @@
 import { useForm } from '@tanstack/react-form';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { toast } from 'sonner';
 import z from 'zod';
@@ -21,6 +21,7 @@ const formSchema = z.object({
   bookTitle: z.string().min(1, 'Book title is required'),
   borrowDate: z.string().min(1, 'Borrow date is required'),
   returnDate: z.string().min(1, 'Return date is required'),
+  borrowTotal: z.number().min(1, 'Borrow total is required'),
 });
 
 export function BugReportForm({
@@ -37,10 +38,14 @@ export function BugReportForm({
   const { data: books } = useQuery({
     ...getBookQuery(bookId),
   });
+  const queryClient = useQueryClient();
   const addMutation = useMutation({
     ...addApplicationMutation,
     onSuccess: () => {
       onOpenChange(false);
+      queryClient.invalidateQueries({
+        queryKey: ['books'],
+      });
     },
   });
   const form = useForm({
@@ -49,6 +54,7 @@ export function BugReportForm({
       bookId: bookId,
       userName: userName,
       bookTitle: books?.title || '',
+      borrowTotal: 0,
       borrowDate: '',
       returnDate: '',
     },
@@ -73,6 +79,7 @@ export function BugReportForm({
       const applicationData = {
         userId: value.userId,
         bookId: value.bookId,
+        borrowTotal: value.borrowTotal,
         borrowDate: dayjs(value.borrowDate).unix(),
         returnDate: dayjs(value.returnDate).unix(),
         status: '待审核' as const,
@@ -129,6 +136,30 @@ export function BugReportForm({
                   aria-invalid={isInvalid}
                   autoComplete='off'
                 />
+                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+              </Field>
+            );
+          }}
+        </form.Field>
+        <form.Field name='borrowTotal'>
+          {(field) => {
+            const isInvalid =
+              field.state.meta.isTouched && !field.state.meta.isValid;
+
+            return (
+              <Field data-invalid={isInvalid}>
+                <FieldLabel htmlFor={field.name}>借阅数量</FieldLabel>
+
+                <Input
+                  id={field.name}
+                  name={field.name}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(Number(e.target.value))}
+                  aria-invalid={isInvalid}
+                  autoComplete='off'
+                />
+
                 {isInvalid && <FieldError errors={field.state.meta.errors} />}
               </Field>
             );

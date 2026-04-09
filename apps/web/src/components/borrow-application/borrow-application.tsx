@@ -44,6 +44,7 @@ export function BorrowApplication() {
             <TableHead>图书名称</TableHead>
             <TableHead>申请日期</TableHead>
             <TableHead>归还日期</TableHead>
+            <TableHead>借阅数量</TableHead>
             <TableHead>审核状态</TableHead>
             <TableHead className='text-center'>操作</TableHead>
           </TableRow>
@@ -62,6 +63,9 @@ export function BorrowApplication() {
                 {dayjs
                   .unix(application.returnDate)
                   .format('YYYY-MM-DD HH:mm:ss')}
+              </TableCell>
+              <TableCell>
+                {application.borrowTotal}
               </TableCell>
               <TableCell>{application.status}</TableCell>
               <TableCell className='text-center'>
