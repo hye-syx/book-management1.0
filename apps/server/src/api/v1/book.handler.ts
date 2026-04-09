@@ -4,7 +4,7 @@ import { bookCategory, books } from '@repo/db/schema/book-schema';
 import { bookSchema } from '@repo/types/book.type';
 import { categorySchema } from '@repo/types/category.type';
 import dayjs from 'dayjs';
-import { eq } from 'drizzle-orm';
+import { eq ,asc} from 'drizzle-orm';
 import { updateBookSchema } from '@repo/types/update.type';
 import { addBookSchema } from '@repo/types/addBook.type';
 
@@ -191,7 +191,8 @@ export const bookApp = app
     const listBook = await db
       .select()
       .from(books)
-      .leftJoin(bookCategory, eq(books.categoryId, bookCategory.id));
+      .leftJoin(bookCategory, eq(books.categoryId, bookCategory.id))
+      .orderBy(asc(books.createdAt));
     return c.json(listBook, 200);
   })
   .openapi(deleteBookRoute, async (c) => {

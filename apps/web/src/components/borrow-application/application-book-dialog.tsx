@@ -7,14 +7,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { BugReportForm } from './application-book-form';
-import { Button } from '../ui/button';
 
 export function ApplicationBookDialog({
   bookId,
   open,
   onOpenChange,
   userId,
-  userName,
+  userName, 
 }: {
   bookId: number | null;
   open: boolean;
