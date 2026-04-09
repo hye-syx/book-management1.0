@@ -1,10 +1,12 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { applicationSchema } from "@repo/types/application.type";
-import { applicationDialogSchema} from "@repo/types/application-dialog.type";
+import { applicationReviewSchema } from "@repo/types/applicationReview.type";
+import { applicationUpdateSchema } from "@repo/types/applicationUpdate.type";
+import { applicationDialogSchema } from '@repo/types/application-dialog.type';
 import { db } from "@repo/db";
 import { borrowApplications } from "@repo/db/schema/borrow-schema";
-import { books } from "@repo/db/schema/book-schema";
-import { eq } from "drizzle-orm";
+import { books, bookStatusEnum } from "@repo/db/schema/book-schema";
+import { eq, sql } from "drizzle-orm";
 import { user } from "@repo/db/schema/auth-schema";
 import { getSession } from "server/src/lib/get-session";
 import dayjs from "dayjs";
@@ -72,6 +74,54 @@ export const createApplicationRoute = createRoute({
     },
   },
 });
+// 批准申请信息
+export const reviewApplicationRoute = createRoute({
+  method: 'patch',
+  path: '/applications/{id}/review',
+  request: {
+    params: z.object({
+      id: z.coerce.number(),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: applicationReviewSchema,
+        },
+      },
+      description: '批准申请信息',
+    },
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: applicationUpdateSchema,
+        },
+      },
+      description: '批准申请信息',
+    },
+    401: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: '未登录',
+    },
+    400: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: '参数错误',
+    },
+  },
+});
 export const applicationApp=app
 .openapi(listApplicationRoute, async(c) => {
     const applications = await db
@@ -88,7 +138,6 @@ export const applicationApp=app
       });
   return c.json(result,200);
 })
-
 .openapi(createApplicationRoute, async(c) => {
   const session = await getSession(c.req.raw.headers);
   if (!session) {
@@ -112,11 +161,98 @@ const [book] = await db.select().from(books).where(eq(books.id, bookId));
  }
   const [applications] = await db.insert(borrowApplications).values({
     ...application,
+    userId:session.user.id,
     status: '待审核',
     createdAt: dayjs().unix(), 
     updatedAt: dayjs().unix(),
   }).returning();
   return c.json(applications,200);
+})
+
+.openapi(reviewApplicationRoute, async(c) => {
+  // 验证是否登录
+  const session = await getSession(c.req.raw.headers);
+  if (!session) {
+    return c.json({ message: '未登录' }, 401);
+  }
+  const {id} = c.req.valid('param');
+  const body = await c.req.json();
+  const {status}=applicationReviewSchema.parse(body);
+  try {
+      const updatedApplication = await db.transaction(async (tx) => {
+      const [application] = await tx
+        .select()
+        .from(borrowApplications)
+        .where(eq(borrowApplications.id, id));
+      if (!application) {
+        throw new Error('申请不存在')
+      }
+      if (application.status !== '待审核') {
+        throw new Error('申请状态不是待审核')
+      }
+       switch (status) {
+        case '已拒绝': {
+          const [rejectApplication] = await tx
+            .update(borrowApplications)
+            .set({
+              status: '已拒绝',
+              updatedAt: dayjs().unix(),
+            })
+            .where(eq(borrowApplications.id, id))
+            .returning();
+          return rejectApplication;
+        }
+
+        case '已取消': {
+          const [cancelApplication] = await tx
+            .update(borrowApplications)
+            .set({
+              status: '已取消',
+              updatedAt: dayjs().unix(),
+            })
+            .where(eq(borrowApplications.id, id))
+            .returning();
+          return cancelApplication;
+        }
+
+        case '已批准': {
+          await tx
+            .update(books)
+            .set({
+              available: sql`${books.available} - 1`,
+              updatedAt: dayjs().unix(),
+            })
+            .where(eq(books.id, application.bookId))
+            .returning();
+
+          const [approvedApplication] = await tx
+            .update(borrowApplications)
+            .set({
+              status: '已批准',
+              updatedAt: dayjs().unix(),
+            })
+            .where(eq(borrowApplications.id, id))
+            .returning();
+          return approvedApplication;
+        }
+
+        default: {
+          throw new Error('不支持的申请状态');
+        }
+      }
+    });
+    return c.json(updatedApplication,200)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '审核失败';
+    if (message === '申请不存在') {
+      return c.json({ message }, 400);
+    }
+
+    return c.json({ message }, 400);
+  }
+ 
+  
+ 
 });
 
 export type ApplicationAppType = typeof applicationApp;
