@@ -48,9 +48,19 @@ export const AppSidebarData = {
     },
     {
       title: '借阅申请',
-      url: '/borrow-application',
+      // url: '/borrow-application',
       icon: <BookOpenIcon />,
-      type: 'single',
+      type: 'group',
+      items: [
+        {
+          title: '借阅申请',
+          url: '/borrow-application',
+        },
+        {
+          title: '借阅记录',
+          url: '/borrow-records',
+        },
+      ],
     },
     {
       title: '系统设置',
