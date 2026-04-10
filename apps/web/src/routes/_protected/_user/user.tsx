@@ -8,7 +8,7 @@ import {
 import { User } from '#/components/user/user';
 import { createFileRoute } from '@tanstack/react-router';
 
-export const Route = createFileRoute('/_protected/user')({
+export const Route = createFileRoute('/_protected/_user/user')({
   component: userPage,
 });
 

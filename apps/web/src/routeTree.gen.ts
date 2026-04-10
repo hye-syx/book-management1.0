@@ -14,11 +14,13 @@ import { Route as AuthRouteRouteImport } from './routes/auth/route'
 import { Route as ProtectedRouteRouteImport } from './routes/_protected/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
-import { Route as ProtectedUserRouteImport } from './routes/_protected/user'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
 import { Route as ProtectedBorrowRecordsRouteImport } from './routes/_protected/borrow-records'
 import { Route as ProtectedBorrowApplicationRouteImport } from './routes/_protected/borrow-application'
-import { Route as ProtectedAddBookRouteImport } from './routes/_protected/add-book'
+import { Route as ProtectedUserRouteRouteImport } from './routes/_protected/_user/route'
+import { Route as ProtectedLimitsRouteRouteImport } from './routes/_protected/_limits/route'
+import { Route as ProtectedUserUserRouteImport } from './routes/_protected/_user/user'
+import { Route as ProtectedLimitsAddBookRouteImport } from './routes/_protected/_limits/add-book'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -44,11 +46,6 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => AuthRouteRoute,
 } as any)
-const ProtectedUserRoute = ProtectedUserRouteImport.update({
-  id: '/user',
-  path: '/user',
-  getParentRoute: () => ProtectedRouteRoute,
-} as any)
 const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -65,33 +62,46 @@ const ProtectedBorrowApplicationRoute =
     path: '/borrow-application',
     getParentRoute: () => ProtectedRouteRoute,
   } as any)
-const ProtectedAddBookRoute = ProtectedAddBookRouteImport.update({
+const ProtectedUserRouteRoute = ProtectedUserRouteRouteImport.update({
+  id: '/_user',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
+const ProtectedLimitsRouteRoute = ProtectedLimitsRouteRouteImport.update({
+  id: '/_limits',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
+const ProtectedUserUserRoute = ProtectedUserUserRouteImport.update({
+  id: '/user',
+  path: '/user',
+  getParentRoute: () => ProtectedUserRouteRoute,
+} as any)
+const ProtectedLimitsAddBookRoute = ProtectedLimitsAddBookRouteImport.update({
   id: '/add-book',
   path: '/add-book',
-  getParentRoute: () => ProtectedRouteRoute,
+  getParentRoute: () => ProtectedLimitsRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteRouteWithChildren
   '/signup': typeof SignupRoute
-  '/add-book': typeof ProtectedAddBookRoute
   '/borrow-application': typeof ProtectedBorrowApplicationRoute
   '/borrow-records': typeof ProtectedBorrowRecordsRoute
   '/dashboard': typeof ProtectedDashboardRoute
-  '/user': typeof ProtectedUserRoute
   '/auth/login': typeof AuthLoginRoute
+  '/add-book': typeof ProtectedLimitsAddBookRoute
+  '/user': typeof ProtectedUserUserRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteRouteWithChildren
   '/signup': typeof SignupRoute
-  '/add-book': typeof ProtectedAddBookRoute
   '/borrow-application': typeof ProtectedBorrowApplicationRoute
   '/borrow-records': typeof ProtectedBorrowRecordsRoute
   '/dashboard': typeof ProtectedDashboardRoute
-  '/user': typeof ProtectedUserRoute
   '/auth/login': typeof AuthLoginRoute
+  '/add-book': typeof ProtectedLimitsAddBookRoute
+  '/user': typeof ProtectedUserUserRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -99,12 +109,14 @@ export interface FileRoutesById {
   '/_protected': typeof ProtectedRouteRouteWithChildren
   '/auth': typeof AuthRouteRouteWithChildren
   '/signup': typeof SignupRoute
-  '/_protected/add-book': typeof ProtectedAddBookRoute
+  '/_protected/_limits': typeof ProtectedLimitsRouteRouteWithChildren
+  '/_protected/_user': typeof ProtectedUserRouteRouteWithChildren
   '/_protected/borrow-application': typeof ProtectedBorrowApplicationRoute
   '/_protected/borrow-records': typeof ProtectedBorrowRecordsRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
-  '/_protected/user': typeof ProtectedUserRoute
   '/auth/login': typeof AuthLoginRoute
+  '/_protected/_limits/add-book': typeof ProtectedLimitsAddBookRoute
+  '/_protected/_user/user': typeof ProtectedUserUserRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -112,35 +124,37 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/signup'
-    | '/add-book'
     | '/borrow-application'
     | '/borrow-records'
     | '/dashboard'
-    | '/user'
     | '/auth/login'
+    | '/add-book'
+    | '/user'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/signup'
-    | '/add-book'
     | '/borrow-application'
     | '/borrow-records'
     | '/dashboard'
-    | '/user'
     | '/auth/login'
+    | '/add-book'
+    | '/user'
   id:
     | '__root__'
     | '/'
     | '/_protected'
     | '/auth'
     | '/signup'
-    | '/_protected/add-book'
+    | '/_protected/_limits'
+    | '/_protected/_user'
     | '/_protected/borrow-application'
     | '/_protected/borrow-records'
     | '/_protected/dashboard'
-    | '/_protected/user'
     | '/auth/login'
+    | '/_protected/_limits/add-book'
+    | '/_protected/_user/user'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -187,13 +201,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof AuthRouteRoute
     }
-    '/_protected/user': {
-      id: '/_protected/user'
-      path: '/user'
-      fullPath: '/user'
-      preLoaderRoute: typeof ProtectedUserRouteImport
-      parentRoute: typeof ProtectedRouteRoute
-    }
     '/_protected/dashboard': {
       id: '/_protected/dashboard'
       path: '/dashboard'
@@ -215,30 +222,73 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedBorrowApplicationRouteImport
       parentRoute: typeof ProtectedRouteRoute
     }
-    '/_protected/add-book': {
-      id: '/_protected/add-book'
+    '/_protected/_user': {
+      id: '/_protected/_user'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ProtectedUserRouteRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
+    '/_protected/_limits': {
+      id: '/_protected/_limits'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ProtectedLimitsRouteRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
+    '/_protected/_user/user': {
+      id: '/_protected/_user/user'
+      path: '/user'
+      fullPath: '/user'
+      preLoaderRoute: typeof ProtectedUserUserRouteImport
+      parentRoute: typeof ProtectedUserRouteRoute
+    }
+    '/_protected/_limits/add-book': {
+      id: '/_protected/_limits/add-book'
       path: '/add-book'
       fullPath: '/add-book'
-      preLoaderRoute: typeof ProtectedAddBookRouteImport
-      parentRoute: typeof ProtectedRouteRoute
+      preLoaderRoute: typeof ProtectedLimitsAddBookRouteImport
+      parentRoute: typeof ProtectedLimitsRouteRoute
     }
   }
 }
 
+interface ProtectedLimitsRouteRouteChildren {
+  ProtectedLimitsAddBookRoute: typeof ProtectedLimitsAddBookRoute
+}
+
+const ProtectedLimitsRouteRouteChildren: ProtectedLimitsRouteRouteChildren = {
+  ProtectedLimitsAddBookRoute: ProtectedLimitsAddBookRoute,
+}
+
+const ProtectedLimitsRouteRouteWithChildren =
+  ProtectedLimitsRouteRoute._addFileChildren(ProtectedLimitsRouteRouteChildren)
+
+interface ProtectedUserRouteRouteChildren {
+  ProtectedUserUserRoute: typeof ProtectedUserUserRoute
+}
+
+const ProtectedUserRouteRouteChildren: ProtectedUserRouteRouteChildren = {
+  ProtectedUserUserRoute: ProtectedUserUserRoute,
+}
+
+const ProtectedUserRouteRouteWithChildren =
+  ProtectedUserRouteRoute._addFileChildren(ProtectedUserRouteRouteChildren)
+
 interface ProtectedRouteRouteChildren {
-  ProtectedAddBookRoute: typeof ProtectedAddBookRoute
+  ProtectedLimitsRouteRoute: typeof ProtectedLimitsRouteRouteWithChildren
+  ProtectedUserRouteRoute: typeof ProtectedUserRouteRouteWithChildren
   ProtectedBorrowApplicationRoute: typeof ProtectedBorrowApplicationRoute
   ProtectedBorrowRecordsRoute: typeof ProtectedBorrowRecordsRoute
   ProtectedDashboardRoute: typeof ProtectedDashboardRoute
-  ProtectedUserRoute: typeof ProtectedUserRoute
 }
 
 const ProtectedRouteRouteChildren: ProtectedRouteRouteChildren = {
-  ProtectedAddBookRoute: ProtectedAddBookRoute,
+  ProtectedLimitsRouteRoute: ProtectedLimitsRouteRouteWithChildren,
+  ProtectedUserRouteRoute: ProtectedUserRouteRouteWithChildren,
   ProtectedBorrowApplicationRoute: ProtectedBorrowApplicationRoute,
   ProtectedBorrowRecordsRoute: ProtectedBorrowRecordsRoute,
   ProtectedDashboardRoute: ProtectedDashboardRoute,
-  ProtectedUserRoute: ProtectedUserRoute,
 }
 
 const ProtectedRouteRouteWithChildren = ProtectedRouteRoute._addFileChildren(

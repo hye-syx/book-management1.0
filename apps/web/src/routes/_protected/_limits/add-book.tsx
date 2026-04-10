@@ -9,7 +9,7 @@ import {
 import { Separator } from '@base-ui/react';
 import { createFileRoute } from '@tanstack/react-router';
 
-export const Route = createFileRoute('/_protected/add-book')({
+export const Route = createFileRoute('/_protected/_limits/add-book')({
   component: Dashboard,
 });
 
