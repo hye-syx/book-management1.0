@@ -72,10 +72,10 @@ export const AppSidebarData = {
           title: '用户管理',
           url: '#',
         },
-        {
-          title: '角色管理',
-          url: '#',
-        },
+        // {
+        //   title: '角色管理',
+        //   url: '#',
+        // },
         // {
         //   title: 'Billing',
         //   url: '#',
