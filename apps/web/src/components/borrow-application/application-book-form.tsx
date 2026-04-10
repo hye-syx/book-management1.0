@@ -226,7 +226,7 @@ export function BugReportForm({
         </Button>
         <Button
           type='submit'   
-          onClick={() => form.handleSubmit()}
+          // onClick={() => form.handleSubmit()}
         >
           提交申请
         </Button>
