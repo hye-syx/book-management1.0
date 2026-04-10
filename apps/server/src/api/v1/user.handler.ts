@@ -42,6 +42,46 @@ export const listUserRoute = createRoute({
     },
   },
 });
+// 获取单个用户信息
+export const getUserRoute = createRoute({
+  method: 'get',
+  path: '/user/{id}',
+  request: {
+    params: z.object({
+      id: z.string(),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: userSchema,
+        },
+      },
+      description: '获取单个用户信息',
+    },
+    401: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: '未登录',
+    },
+    403: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: '没有权限',
+    },
+  },
+});
 // 编辑用户信息
 export const updateUserRoute = createRoute({
   method: 'put',
@@ -89,6 +129,7 @@ export const updateUserRoute = createRoute({
     },
   },
 });
+
 // 删除用户信息
 
 export const userApp = app
@@ -123,6 +164,18 @@ export const userApp = app
       .where(eq(user.id, id))
       .returning();
     return c.json(updated, 200);
+  })
+  .openapi(getUserRoute, async (c) => {
+    const session = await getSession(c.req.raw.headers);
+    if (!session) {
+      return c.json({ message: '未登录' }, 401);
+    }
+    if (session.user.role !== 'admin') {
+      return c.json({ message: '权限不足' }, 403);
+    }
+    const { id } = c.req.param();
+    const [userResult] = await db.select().from(user).where(eq(user.id, id));
+    return c.json(userResult, 200);
   });
 
 export type UserAppType = typeof userApp;
