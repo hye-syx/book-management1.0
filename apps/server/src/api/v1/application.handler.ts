@@ -267,7 +267,7 @@ export const applicationApp = app
           throw new Error('申请状态不是待审核');
         }
         // 权限设置
-        if (status === '已取消' && application.userId !== session.user.id) {
+        if (status === '已取消' && application.userId !== session.user.id && !(session.user.role === 'admin' || session.user.role === 'librarian')) {
           throw new Error('只能取消自己的申请');
         }
         if((status === '已批准' || status === '已拒绝') && session.user.role === 'reader') {
