@@ -29,6 +29,16 @@ export const listBookRoute = createRoute({
       },
       description: '获取全部图书',
     },
+    401: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: '未登录',
+    },
   },
 });
 // 删除图书
@@ -60,6 +70,16 @@ export const deleteBookRoute = createRoute({
         },
       },
       description: '未登录',
+    },
+    403: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: '没有权限',
     },
   },
 });
@@ -130,6 +150,16 @@ export const editBookRoute = createRoute({
       },
       description: '未登录',
     },
+    403: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: '没有权限',
+    },
   },
 });
 // 新增单本图书
@@ -170,6 +200,14 @@ export const createBookRoute = createRoute({
       },
       description: '参数错误',
     },
+    403: {
+      content: {
+        'application/json': {
+          schema: z.object({ message: z.string() }),
+        },
+      },
+      description: '没有权限',
+    },
   },
 });
 // 查询所有分类信息
@@ -186,10 +224,22 @@ export const listCategoryRoute = createRoute({
       },
       description: '获取全部分类',
     },
+    401: {
+      content: {
+        'application/json': {
+          schema: z.object({ message: z.string() }),
+        },
+      },
+      description: '未登录',
+    },
   },
 });
 export const bookApp = app
   .openapi(listBookRoute, async (c) => {
+    const session = await getSession(c.req.raw.headers);
+    if (!session) {
+      return c.json({ message: '未登录' }, 401);
+    }
     const listBook = await db
       .select()
       .from(books)
@@ -202,6 +252,9 @@ export const bookApp = app
     if (!session) {
       return c.json({ message: '未登录' }, 401);
     }
+    if (session.user.role === 'reader') {
+      return c.json({ message: '没有权限' }, 403);
+    }
 
     const { id } = c.req.valid('param');
     await db.delete(books).where(eq(books.id, id));
@@ -212,7 +265,9 @@ export const bookApp = app
     if (!session) {
       return c.json({ message: '未登录' }, 401);
     }
-
+    if (session.user.role === 'reader') {
+      return c.json({ message: '没有权限' }, 403);
+    }
     const { id } = c.req.valid('param');
     const body = await c.req.json();
     const book = updateBookSchema.parse(body);
@@ -225,6 +280,10 @@ export const bookApp = app
     return c.json(updated, 200);
   })
   .openapi(getBookByIdRoute, async (c) => {
+    const session = await getSession(c.req.raw.headers);
+    if (!session) {
+      return c.json({ message: '未登录' }, 401);
+    }
     const { id } = c.req.valid('param');
     const [book] = await db
       .select()
@@ -242,7 +301,9 @@ export const bookApp = app
     if (!session) {
       return c.json({ message: '未登录' }, 401);
     }
-
+    if (session.user.role === 'reader') {
+      return c.json({ message: '没有权限' }, 403);
+    }
     const body = await c.req.json();
     const book = addBookSchema.parse(body);
     const total = book.total;
@@ -272,6 +333,10 @@ export const bookApp = app
     return c.json(created, 200);
   })
   .openapi(listCategoryRoute, async (c) => {
+    const session = await getSession(c.req.raw.headers);
+    if (!session) {
+      return c.json({ message: '未登录' }, 401);
+    }
     const categories = await db.select().from(bookCategory);
     return c.json(categories, 200);
   });
