@@ -11,9 +11,17 @@ import {
 } from '../ui/table';
 import {useQuery} from '@tanstack/react-query';
 import { Button } from '../ui/button';
+import { useState } from 'react';
+import { EditUserDialog } from './edit-user-dialog';
 
 export function User() {
-  const { data: users } = useQuery<UserType.User[]>(listUserQuery);
+  // 获取全部图书
+  const { data: users } = useQuery<UserType.User[]>({
+    ...listUserQuery,
+  });
+  // 编辑图书
+  const [editUserId, setEditUserId] = useState<string | ''>('');
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   return (
     <div className='rounded-lg border border-gray-200 overflow-hidden'>
       <Table className='min-full'>
@@ -42,13 +50,23 @@ export function User() {
               </TableCell>
 
               <TableCell className='text-center'>
-              <Button>编辑</Button>
+              <Button onClick={() => {
+                setEditUserId(user.id);
+                setEditDialogOpen(true);
+              }}>编辑</Button>
               <Button>删除</Button>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+      <EditUserDialog
+        userId={editUserId}
+        open={editDialogOpen}
+        onOpenChange={(open) => {
+          setEditDialogOpen(open);
+        }}
+      />
     </div>
   );
 }
