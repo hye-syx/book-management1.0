@@ -70,11 +70,11 @@ export const AppSidebarData = {
       items: [
         {
           title: '用户管理',
-          url: '#',
+          url: '/user',
         },
         // {
         //   title: '角色管理',
-        //   url: '#',
+        //   url: '#', 
         // },
         // {
         //   title: 'Billing',

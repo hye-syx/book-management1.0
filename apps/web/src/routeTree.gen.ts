@@ -14,7 +14,9 @@ import { Route as AuthRouteRouteImport } from './routes/auth/route'
 import { Route as ProtectedRouteRouteImport } from './routes/_protected/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
+import { Route as ProtectedUserRouteImport } from './routes/_protected/user'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
+import { Route as ProtectedBorrowRecordsRouteImport } from './routes/_protected/borrow-records'
 import { Route as ProtectedBorrowApplicationRouteImport } from './routes/_protected/borrow-application'
 import { Route as ProtectedAddBookRouteImport } from './routes/_protected/add-book'
 
@@ -42,9 +44,19 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => AuthRouteRoute,
 } as any)
+const ProtectedUserRoute = ProtectedUserRouteImport.update({
+  id: '/user',
+  path: '/user',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
 const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
+const ProtectedBorrowRecordsRoute = ProtectedBorrowRecordsRouteImport.update({
+  id: '/borrow-records',
+  path: '/borrow-records',
   getParentRoute: () => ProtectedRouteRoute,
 } as any)
 const ProtectedBorrowApplicationRoute =
@@ -65,7 +77,9 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/add-book': typeof ProtectedAddBookRoute
   '/borrow-application': typeof ProtectedBorrowApplicationRoute
+  '/borrow-records': typeof ProtectedBorrowRecordsRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/user': typeof ProtectedUserRoute
   '/auth/login': typeof AuthLoginRoute
 }
 export interface FileRoutesByTo {
@@ -74,7 +88,9 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/add-book': typeof ProtectedAddBookRoute
   '/borrow-application': typeof ProtectedBorrowApplicationRoute
+  '/borrow-records': typeof ProtectedBorrowRecordsRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/user': typeof ProtectedUserRoute
   '/auth/login': typeof AuthLoginRoute
 }
 export interface FileRoutesById {
@@ -85,7 +101,9 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_protected/add-book': typeof ProtectedAddBookRoute
   '/_protected/borrow-application': typeof ProtectedBorrowApplicationRoute
+  '/_protected/borrow-records': typeof ProtectedBorrowRecordsRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
+  '/_protected/user': typeof ProtectedUserRoute
   '/auth/login': typeof AuthLoginRoute
 }
 export interface FileRouteTypes {
@@ -96,7 +114,9 @@ export interface FileRouteTypes {
     | '/signup'
     | '/add-book'
     | '/borrow-application'
+    | '/borrow-records'
     | '/dashboard'
+    | '/user'
     | '/auth/login'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -105,7 +125,9 @@ export interface FileRouteTypes {
     | '/signup'
     | '/add-book'
     | '/borrow-application'
+    | '/borrow-records'
     | '/dashboard'
+    | '/user'
     | '/auth/login'
   id:
     | '__root__'
@@ -115,7 +137,9 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_protected/add-book'
     | '/_protected/borrow-application'
+    | '/_protected/borrow-records'
     | '/_protected/dashboard'
+    | '/_protected/user'
     | '/auth/login'
   fileRoutesById: FileRoutesById
 }
@@ -163,11 +187,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof AuthRouteRoute
     }
+    '/_protected/user': {
+      id: '/_protected/user'
+      path: '/user'
+      fullPath: '/user'
+      preLoaderRoute: typeof ProtectedUserRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
     '/_protected/dashboard': {
       id: '/_protected/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof ProtectedDashboardRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
+    '/_protected/borrow-records': {
+      id: '/_protected/borrow-records'
+      path: '/borrow-records'
+      fullPath: '/borrow-records'
+      preLoaderRoute: typeof ProtectedBorrowRecordsRouteImport
       parentRoute: typeof ProtectedRouteRoute
     }
     '/_protected/borrow-application': {
@@ -190,13 +228,17 @@ declare module '@tanstack/react-router' {
 interface ProtectedRouteRouteChildren {
   ProtectedAddBookRoute: typeof ProtectedAddBookRoute
   ProtectedBorrowApplicationRoute: typeof ProtectedBorrowApplicationRoute
+  ProtectedBorrowRecordsRoute: typeof ProtectedBorrowRecordsRoute
   ProtectedDashboardRoute: typeof ProtectedDashboardRoute
+  ProtectedUserRoute: typeof ProtectedUserRoute
 }
 
 const ProtectedRouteRouteChildren: ProtectedRouteRouteChildren = {
   ProtectedAddBookRoute: ProtectedAddBookRoute,
   ProtectedBorrowApplicationRoute: ProtectedBorrowApplicationRoute,
+  ProtectedBorrowRecordsRoute: ProtectedBorrowRecordsRoute,
   ProtectedDashboardRoute: ProtectedDashboardRoute,
+  ProtectedUserRoute: ProtectedUserRoute,
 }
 
 const ProtectedRouteRouteWithChildren = ProtectedRouteRoute._addFileChildren(
