@@ -10,4 +10,13 @@ export const auth = betterAuth({
     enabled: true,
     autoSignIn: false,
   },
+  user:{
+    additionalFields: {
+      role: {
+        type: ["admin", "librarian", "reader"],
+        defaultValue: "reader",
+        input: false,
+      },
+    },
+  },
 });
