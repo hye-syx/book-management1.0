@@ -1,5 +1,5 @@
 import type { ApplicationDialogType } from '@repo/types';
-import type { ApplicationReviewRequest } from '@repo/types/applicationReview.type';
+import type { ApplicationReviewRequest } from '@repo/types/src/application/applicationReview.type';
 import { apiClient } from '#/lib/api-client';
 
 // 获取所有图书的申请

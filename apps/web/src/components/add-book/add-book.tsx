@@ -370,7 +370,6 @@ export function AddBookForm() {
           </Button>
           <Button
             type='submit'
-            form='bug-report-form'
             onClick={() => form.handleSubmit()}
           >
             提交

@@ -225,8 +225,7 @@ export function BugReportForm({
           取消
         </Button>
         <Button
-          type='submit'
-          form='bug-report-form'
+          type='submit'   
           onClick={() => form.handleSubmit()}
         >
           提交申请
