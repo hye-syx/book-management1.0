@@ -25,9 +25,6 @@ export function TableDemo() {
   );
   const { data: session } = authClient.useSession();
   const role = session?.user?.role;
-  console.log(session);
-  console.log(session?.user);
-  console.log(role);
   const handleApplicationClose = (open: boolean, bookId?: number) => {
     setApplicationDialogOpen(open);
     if (bookId) {
@@ -113,23 +110,6 @@ export function TableDemo() {
                     </>
                   )
                 }
-                  {/* <Button
-                    onClick={() => {
-                      setEditingBookId(book.books.id);
-                      setEditDialogOpen(true);
-                    }}
-                  >
-                    编辑
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      if (confirm('确定删除吗？')) {
-                        handleDelete(book.books.id);
-                      }
-                    }}
-                  >
-                    删除
-                  </Button> */}
 
                 <Button
                   onClick={() => {

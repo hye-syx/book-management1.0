@@ -7,6 +7,9 @@ export const listApplicationQuery = {
   queryKey: ['applications', 'all'],
   queryFn: async () => {
     const response = await apiClient.applications.$get();
+    if (!response.ok) {
+      throw new Error('Failed to fetch users');
+    }
     return await response.json();
   },
 };

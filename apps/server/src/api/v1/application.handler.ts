@@ -26,6 +26,16 @@ export const listApplicationRoute = createRoute({
       },
       description: '获取全部申请信息',
     },
+    401: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: '未登录',
+    },
   },
 });
 // 新增申请信息
@@ -119,25 +129,58 @@ export const reviewApplicationRoute = createRoute({
       },
       description: '参数错误',
     },
+    403: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: '权限不足',
+    },
   },
 });
 
 export const applicationApp = app
   .openapi(listApplicationRoute, async (c) => {
-    const applications = await db
-      .select()
-      .from(borrowApplications)
-      .leftJoin(books, eq(borrowApplications.bookId, books.id))
-      .leftJoin(user, eq(borrowApplications.userId, user.id))
-      .orderBy(asc(borrowApplications.createdAt));
-    const result = applications.map((item) => {
-      return {
-        ...item.borrow_applications,
-        bookTitle: item.books?.title || '',
-        userName: item.user?.name || '',
-      };
-    });
-    return c.json(result, 200);
+    const session = await getSession(c.req.raw.headers);
+    if (!session) {
+      return c.json({ message: '未登录' }, 401);
+    }
+    if(session.user.role === 'reader') {
+      // 只能查看自己的申请
+      const applications = await db
+        .select()
+        .from(borrowApplications)
+        .where(eq(borrowApplications.userId, session.user.id))
+        .leftJoin(books, eq(borrowApplications.bookId, books.id))
+        .leftJoin(user, eq(borrowApplications.userId, user.id))
+        .orderBy(asc(borrowApplications.createdAt));
+      const result = applications.map((item) => {
+        return {
+          ...item.borrow_applications,
+          bookTitle: item.books?.title || '',
+          userName: item.user?.name || '',
+        };
+      });
+      return c.json(result, 200);
+    }else {
+      const applications = await db
+        .select()
+        .from(borrowApplications)
+        .leftJoin(books, eq(borrowApplications.bookId, books.id))
+        .leftJoin(user, eq(borrowApplications.userId, user.id))
+        .orderBy(asc(borrowApplications.createdAt));
+      const result = applications.map((item) => {
+        return {
+          ...item.borrow_applications,
+          bookTitle: item.books?.title || '',
+          userName: item.user?.name || '',
+        };
+      });
+      return c.json(result, 200);
+    }
   })
   .openapi(createApplicationRoute, async (c) => {
     const session = await getSession(c.req.raw.headers);
@@ -223,6 +266,13 @@ export const applicationApp = app
         if (application.status !== '待审核') {
           throw new Error('申请状态不是待审核');
         }
+        // 权限设置
+        if (status === '已取消' && application.userId !== session.user.id) {
+          throw new Error('只能取消自己的申请');
+        }
+        if((status === '已批准' || status === '已拒绝') && session.user.role === 'reader') {
+          throw new Error('只有管理员或图书管理员才能通过或拒绝申请');
+        }
         switch (status) {
           case '已拒绝': {
             const [rejectApplication] = await tx
@@ -286,7 +336,9 @@ export const applicationApp = app
       if (message === '申请不存在') {
         return c.json({ message }, 400);
       }
-
+      if (message === '只能取消自己的申请') return c.json({ message }, 403);
+      if (message === '只有管理员或图书管理员才能通过或拒绝申请')return c.json({ message }, 403);
+      if (message === '申请状态不是待审核') return c.json({ message }, 400);
       return c.json({ message }, 400);
     }
   });

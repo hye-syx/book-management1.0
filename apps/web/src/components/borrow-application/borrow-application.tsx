@@ -1,5 +1,5 @@
 import type { ApplicationType } from '@repo/types';
-import type { ApplicationReviewRequest } from '@repo/types/applicationReview.type';
+import type { ApplicationReviewRequest } from '@repo/types/src/application/ApplicationReview.type';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import {
@@ -15,10 +15,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '../ui/button';
+import { authClient } from '#/lib/auth-client';
 
 export function BorrowApplication() {
-  const { data: applications } =
-    useQuery<ApplicationType.Application[]>(listApplicationQuery);
+  const { data: applications } = useQuery<ApplicationType.Application[]>({
+    ...listApplicationQuery,
+  });
+  const { data: session } = authClient.useSession();
+    const role = session?.user?.role;
   // 审批
   const queryClient = useQueryClient();
   const reviewMutation = useMutation({
@@ -64,27 +68,29 @@ export function BorrowApplication() {
                   .unix(application.returnDate)
                   .format('YYYY-MM-DD HH:mm:ss')}
               </TableCell>
-              <TableCell>
-                {application.borrowTotal}
-              </TableCell>
+              <TableCell>{application.borrowTotal}</TableCell>
               <TableCell>{application.status}</TableCell>
               <TableCell className='text-center'>
-                <Button
-                  disabled={application.status !== '待审核'}
-                  onClick={() => {
-                    handelReview(application.id, '已批准');
-                  }}
-                >
-                  同意
-                </Button>
-                <Button
-                  disabled={application.status !== '待审核'}
-                  onClick={() => {
-                    handelReview(application.id, '已拒绝');
-                  }}
-                >
-                  拒绝
-                </Button>
+                {role !== 'reader' && (
+                  <>
+                    <Button
+                      disabled={application.status !== '待审核'}
+                      onClick={() => {
+                        handelReview(application.id, '已批准');
+                      }}
+                    >
+                      同意
+                    </Button>
+                    <Button
+                      disabled={application.status !== '待审核'}
+                      onClick={() => {
+                        handelReview(application.id, '已拒绝');
+                      }}
+                    >
+                      拒绝
+                    </Button>
+                  </>
+                )}
                 <Button
                   disabled={application.status !== '待审核'}
                   onClick={() => {
