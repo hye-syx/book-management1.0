@@ -1,6 +1,6 @@
 import type { UserType } from '@repo/types';
 import dayjs from 'dayjs';
-import { listUserQuery } from '#/queries/user.query';
+import { deleteUserMutation, listUserQuery } from '#/queries/user.query';
 import {
   Table,
   TableBody,
@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '../ui/table';
-import {useQuery} from '@tanstack/react-query';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import { Button } from '../ui/button';
 import { useState } from 'react';
 import { EditUserDialog } from './edit-user-dialog';
@@ -19,9 +19,17 @@ export function User() {
   const { data: users } = useQuery<UserType.User[]>({
     ...listUserQuery,
   });
-  // 编辑图书
   const [editUserId, setEditUserId] = useState<string | ''>('');
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
+  // 删除图书
+  const deleteMutation = useMutation({
+    ...deleteUserMutation,
+    onSuccess: () => {
+      // 刷新列表
+      queryClient.invalidateQueries({ queryKey: ['user', 'all'] });
+    },
+  });
   return (
     <div className='rounded-lg border border-gray-200 overflow-hidden'>
       <Table className='min-full'>
@@ -54,7 +62,13 @@ export function User() {
                 setEditUserId(user.id);
                 setEditDialogOpen(true);
               }}>编辑</Button>
-              <Button>删除</Button>
+              <Button onClick={() => {
+                if(confirm('确定删除吗？')) {
+                  deleteMutation.mutate(user.id);
+                }
+              }}
+              
+              >删除</Button>
               </TableCell>
             </TableRow>
           ))}

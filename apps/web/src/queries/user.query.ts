@@ -35,4 +35,14 @@ export const updateUserMutation = {
     return await response.json();
   },
 };
+// 删除图书
+export const deleteUserMutation={
+  mutationKey:['user','delete'],
+  mutationFn: async (id: string) => {
+    const response = await apiClient.user[':id'].$delete({
+      param: { id },
+    });
+    return await response.json();
+  },
+}
 
