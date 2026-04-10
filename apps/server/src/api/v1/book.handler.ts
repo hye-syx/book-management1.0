@@ -1,12 +1,12 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { db } from '@repo/db';
 import { bookCategory, books } from '@repo/db/schema/book-schema';
-import { bookSchema } from '@repo/types/book.type';
-import { categorySchema } from '@repo/types/category.type';
+import { addBookSchema } from '@repo/types/src/book/addBook.type';
+import { bookSchema } from '@repo/types/src/book/book.type';
+import { categorySchema } from '@repo/types/src/book/category.type';
+import { updateBookSchema } from '@repo/types/src/book/update.type';
 import dayjs from 'dayjs';
-import { eq ,asc} from 'drizzle-orm';
-import { updateBookSchema } from '@repo/types/update.type';
-import { addBookSchema } from '@repo/types/addBook.type';
+import { asc, eq } from 'drizzle-orm';
 
 import { getSession } from '../../lib/get-session';
 
@@ -20,9 +20,11 @@ export const listBookRoute = createRoute({
     200: {
       content: {
         'application/json': {
-          schema: z.array(bookSchema.extend({
-            categoryName: z.string(),
-          })),
+          schema: z.array(
+            bookSchema.extend({
+              categoryName: z.string(),
+            }),
+          ),
         },
       },
       description: '获取全部图书',
@@ -141,7 +143,7 @@ export const createBookRoute = createRoute({
           schema: addBookSchema,
         },
       },
-    }
+    },
   },
   responses: {
     200: {
@@ -224,11 +226,15 @@ export const bookApp = app
   })
   .openapi(getBookByIdRoute, async (c) => {
     const { id } = c.req.valid('param');
-    const [book] = await db.select().from(books).leftJoin(bookCategory, eq(books.categoryId,bookCategory.id)).where(eq(books.id, id));
-    const result ={
+    const [book] = await db
+      .select()
+      .from(books)
+      .leftJoin(bookCategory, eq(books.categoryId, bookCategory.id))
+      .where(eq(books.id, id));
+    const result = {
       ...book.books,
-      categoryName:book.book_category?.name||'',
-    }
+      categoryName: book.book_category?.name || '',
+    };
     return c.json(result, 200);
   })
   .openapi(createBookRoute, async (c) => {
@@ -246,18 +252,28 @@ export const bookApp = app
       return c.json({ message: '库存数量不能为负数或0' }, 400);
     }
     if (isbn) {
-      const [existing] = await db.select().from(books).where(eq(books.isbn, isbn));
+      const [existing] = await db
+        .select()
+        .from(books)
+        .where(eq(books.isbn, isbn));
       if (existing) {
         return c.json({ message: 'ISBN已存在' }, 400);
       }
     }
-    const [created] = await db.insert(books).values({ ...book, createdAt: dayjs().unix(), updatedAt: dayjs().unix(), available }).returning();
+    const [created] = await db
+      .insert(books)
+      .values({
+        ...book,
+        createdAt: dayjs().unix(),
+        updatedAt: dayjs().unix(),
+        available,
+      })
+      .returning();
     return c.json(created, 200);
   })
   .openapi(listCategoryRoute, async (c) => {
     const categories = await db.select().from(bookCategory);
     return c.json(categories, 200);
   });
-  
 
 export type BookAppType = typeof bookApp;
