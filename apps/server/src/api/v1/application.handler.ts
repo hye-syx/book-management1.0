@@ -301,6 +301,12 @@ export const applicationApp = app
               })
               .where(eq(borrowApplications.id, id))
               .returning();
+               await tx
+                .update(books)
+                .set({
+                  available: sql`${books.available} + ${application.borrowTotal}`,
+                })
+                .where(eq(books.id, application.bookId));
             return cancelApplication;
           }
 
