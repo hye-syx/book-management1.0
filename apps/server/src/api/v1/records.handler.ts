@@ -32,26 +32,45 @@ export const listRecordsRoute = createRoute({
       },
       description: '未登录',
     },
+
   },
 });
-
 export const recordsApp = app.openapi(listRecordsRoute, async (c) => {
   const session = await getSession(c.req.raw.headers);
   if (!session) {
     return c.json({ message: '未登录' }, 401);
   }
-  const records = await db
-    .select()
-    .from(borrowRecords)
-    .leftJoin(books, eq(borrowRecords.bookId, books.id))
-    .leftJoin(user, eq(borrowRecords.userId, user.id));
+  if(session.user.role==='reader'){
+     const records = await db
+      .select()
+      .from(borrowRecords)
+      .where(eq(borrowRecords.userId,session.user.id))
+      .leftJoin(books, eq(borrowRecords.bookId, books.id))
+      .leftJoin(user, eq(borrowRecords.userId, user.id))
+      .orderBy(borrowRecords.createdAt);
+    const result = records.map((record) => {
+      return {
+        ...record.borrow_records,
+        bookTitle: record.books?.title || '',
+        userName: record.user?.name || '',
+      };
+    });
+    return c.json(result,200);
+  }else{
+     const records = await db
+      .select()
+      .from(borrowRecords)
+      .leftJoin(books, eq(borrowRecords.bookId, books.id))
+      .leftJoin(user, eq(borrowRecords.userId, user.id))
+      .orderBy(borrowRecords.createdAt);
 
-  const result = records.map((record) => {
-    return {
-      ...record.borrow_records,
-      bookTitle: record.books?.title || '',
-      userName: record.user?.name || '',
-    };
-  });
-  return c.json(result, 200);
+    const result = records.map((record) => {
+      return {
+        ...record.borrow_records,
+        bookTitle: record.books?.title || '',
+        userName: record.user?.name || '',
+      };
+    });
+    return c.json(result, 200);
+  }
 });
