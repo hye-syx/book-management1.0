@@ -311,15 +311,6 @@ export const applicationApp = app
           }
 
           case '已批准': {
-            // await tx
-            //   .update(books)
-            //   .set({
-            //     available: sql`${books.available} - ${application.borrowTotal}`,
-            //     updatedAt: dayjs().unix(),
-            //   })
-            //   .where(eq(books.id, application.bookId))
-            //   .returning();
-
             const [approvedApplication] = await tx
               .update(borrowApplications)
               .set({
