@@ -1,8 +1,8 @@
 import type { RecordType } from '@repo/types';
 
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
-import { listRecordsQuery } from '#/queries/record.query';
+import { deleteRecordsMutation, listRecordsQuery } from '#/queries/record.query';
 import {
   Table,
   TableBody,
@@ -12,11 +12,25 @@ import {
   TableRow,
 } from '../ui/table';
 import { Button } from '../ui/button';
+import { toast } from 'sonner';
 
 export function BorrowRecords() {
   const { data: records } = useQuery<RecordType.RecordRequest[]>({
     ...listRecordsQuery,
   });
+  const queryClient = useQueryClient();
+  // 删除记录
+ const deleteRecordMutation = useMutation({
+    ...deleteRecordsMutation,
+    onSuccess: () => {
+      // 刷新列表
+      queryClient.invalidateQueries({ queryKey: ['records', 'all'] });
+      toast.success("删除成功")
+    },
+  });
+  const handleDelete = (id: number) => {
+    deleteRecordMutation.mutate(id);
+  };
   return (
     <div className='rounded-lg border border-gray-200 overflow-hidden'>
       <Table className='min-full'>
@@ -57,7 +71,16 @@ export function BorrowRecords() {
               <TableCell>{record.borrowTotal}</TableCell>
               <TableCell className='text-center'>
                 <Button>归还</Button>
-                <Button>删除</Button>
+                <Button 
+                onClick={()=>{
+                  if (confirm('确定删除吗？')){
+                    handleDelete(record.id);
+                  }
+                }}
+                
+                >
+                  删除
+                </Button>
                 <Button>编辑</Button>
               </TableCell>
             </TableRow>

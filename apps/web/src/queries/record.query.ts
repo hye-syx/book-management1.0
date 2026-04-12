@@ -10,3 +10,12 @@ export const listRecordsQuery = {
     return await response.json();
   },
 };
+export const deleteRecordsMutation = {
+  mutationKey:['records','delete'],
+  mutationFn: async (id: number) => {
+    const response = await apiClient.records[':id'].$delete({
+      param: { id: String(id) },
+    });
+    return await response.json();
+  },
+}
