@@ -4,8 +4,10 @@ import { user } from '@repo/db/schema/auth-schema';
 import { books } from '@repo/db/schema/book-schema';
 import { borrowRecords } from '@repo/db/schema/borrow-schema';
 import { recordSchema } from '@repo/types/src/record/record.type';
-import { eq } from 'drizzle-orm';
+import { updateRecordSchema } from '@repo/types/src/record/update-record.type';
+import { eq, sql } from 'drizzle-orm';
 import { getSession } from 'server/src/lib/get-session';
+import dayjs from 'dayjs';
 
 const app = new OpenAPIHono();
 // 获取全部申请记录
@@ -54,6 +56,54 @@ export const deleteRecordRoute = createRoute({
         },
       },
       description: '删除记录',
+    },
+    401: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: '未登录',
+    },
+    403: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: '权限不足',
+    },
+  },
+});
+// 编辑记录
+export const editRecordRoute = createRoute({
+  method: 'put',
+  path: '/records/{id}',
+  request: {
+    params: z.object({
+      id: z.coerce.number(),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: updateRecordSchema,
+        },
+      },
+      required: true,
+    },
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: recordSchema,
+        },
+      },
+      description: '编辑记录',
     },
     401: {
       content: {
@@ -131,5 +181,49 @@ export const recordsApp = app
     .where(eq(borrowRecords.id, id))
     .returning();
   return c.json({ message: '删除成功' }, 200);
+})
+.openapi(editRecordRoute, async (c) => {
+  const session = await getSession(c.req.raw.headers);
+  if (!session) {
+    return c.json({ message: '未登录' }, 401);
+  }
+  if(session.user.role==='reader'){
+    return c.json({ message: '权限不足' }, 403);
+  }
+  const { id } = c.req.valid('param');
+  const body = await c.req.json();
+  const record = updateRecordSchema.parse(body);
+  const recordStatus=record.status;
+  const updateRecord = await db.transaction(async (tx) => {
+    const [upRecord] = await tx
+      .update(borrowRecords)
+      .set({ ...record, updatedAt: dayjs().unix() })
+      .where(eq(borrowRecords.id, id))
+      .returning();
+    if(recordStatus==='已归还'){
+      // 更新书籍状态
+      await tx
+        .update(books)
+        .set({
+          available: sql`${books.available} + ${record.borrowTotal}`,
+          status: '在馆'
+        
+        })
+        .where(eq(books.id, record.bookId))
+        .returning();
+    }
+    const [fullRecord] = await tx
+    .select()
+    .from(borrowRecords)
+    .leftJoin(books, eq(borrowRecords.bookId, books.id))
+    .leftJoin(user, eq(borrowRecords.userId, user.id))
+    .where(eq(borrowRecords.id, id))
+    return {
+      ...upRecord,
+      bookTitle: fullRecord?.books?.title || '',
+      userName: fullRecord?.user?.name || '',
+    };
+  })
+  return c.json(updateRecord, 200);
 })
 ;
