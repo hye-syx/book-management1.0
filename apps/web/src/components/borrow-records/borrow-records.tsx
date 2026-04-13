@@ -13,8 +13,13 @@ import {
 } from '../ui/table';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
+import { useState } from 'react';
+import { EditRecordDialog } from './edit-record-dialog';
+
 
 export function BorrowRecords() {
+  const [selectedRecordId, setSelectedRecordId] = useState<number | null>(null);
+  const [recordDialogOpen, setRecordDialogOpen] = useState(false);
   const { data: records } = useQuery<RecordType.RecordRequest[]>({
     ...listRecordsQuery,
   });
@@ -31,6 +36,7 @@ export function BorrowRecords() {
   const handleDelete = (id: number) => {
     deleteRecordMutation.mutate(id);
   };
+  // 
   return (
     <div className='rounded-lg border border-gray-200 overflow-hidden'>
       <Table className='min-full'>
@@ -76,17 +82,26 @@ export function BorrowRecords() {
                   if (confirm('确定删除吗？')){
                     handleDelete(record.id);
                   }
-                }}
-                
+                }} 
                 >
                   删除
                 </Button>
-                <Button>编辑</Button>
+                <Button onClick={()=>{
+                  setSelectedRecordId(record.id);
+                  setRecordDialogOpen(true);
+                }}>编辑</Button>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+      <EditRecordDialog
+        recordId={selectedRecordId}
+        open={recordDialogOpen}
+        onOpenChange={(open) => {
+          setRecordDialogOpen(open);
+        }}
+      />
     </div>
   );
 }

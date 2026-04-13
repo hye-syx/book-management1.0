@@ -2,6 +2,7 @@ import { createRouter, RouterProvider } from '@tanstack/react-router';
 import ReactDOM from 'react-dom/client';
 import { TanstackProvider } from './lib/tanstack-provider';
 import { routeTree } from './routeTree.gen';
+import { Toaster } from 'sonner';
 
 const router = createRouter({
   routeTree,
@@ -22,6 +23,7 @@ if (!rootElement.innerHTML) {
   root.render(
     <TanstackProvider>
       <RouterProvider router={router} />
+      <Toaster />
     </TanstackProvider>,
   );
 }
