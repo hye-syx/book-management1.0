@@ -127,6 +127,36 @@ export const editRecordRoute = createRoute({
     },
   },
 });
+// 获取单个记录
+export const getRecordRoute = createRoute({
+  method: 'get',
+  path: '/records/{id}',
+  request: {
+    params: z.object({
+      id: z.coerce.number(),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: recordSchema,
+        },
+      },
+      description: '获取单个记录',
+    },
+    401: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: '未登录',
+    },
+  },
+});
 export const recordsApp = app
 .openapi(listRecordsRoute, async (c) => {
   const session = await getSession(c.req.raw.headers);
@@ -226,4 +256,22 @@ export const recordsApp = app
   })
   return c.json(updateRecord, 200);
 })
+.openapi(getRecordRoute, async (c) => {
+  const session = await getSession(c.req.raw.headers);
+  if (!session) {
+    return c.json({ message: '未登录' }, 401);
+  }
+  const { id } = c.req.valid('param');
+  const [record] = await db
+    .select()
+    .from(borrowRecords)
+    .leftJoin(books, eq(borrowRecords.bookId, books.id))
+    .leftJoin(user, eq(borrowRecords.userId, user.id))
+    .where(eq(borrowRecords.id, id))
+    return c.json({
+      ...record.borrow_records,
+      bookTitle: record.books?.title || '',
+      userName: record.user?.name || '',
+    }, 200);
+}); 
 ;
