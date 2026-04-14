@@ -53,11 +53,6 @@ export const borrowRecords = pgTable("borrow_records", {
     .notNull(),//更新时间  
 });
 // 续借记录表
-export const renewalStatusEnum = pgEnum('renewal_status', [
-  '续借中',
-  '已续借',
-  '续借失败',
-]);
 export const renewalRecords = pgTable("renewal_records", {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
     userId: text("user_id").references(() => user.id,{ onDelete:"cascade" }).notNull(), //续借图书的读者ID
@@ -65,10 +60,9 @@ export const renewalRecords = pgTable("renewal_records", {
     borrowDate: integer("borrow_date").notNull(),//续借日期
     returnDate: integer("return_date").notNull(),//续借归还日期
     borrowTotal: integer("borrow_total").notNull(),//续借总数
-    status: text("status").notNull(),//续借状态
-    createdAt: integer("created_at").$default(()=>dayjs().unix()).notNull(),//创建时间
+    createdAt: integer("created_at").$defaultFn(() => dayjs().unix()).notNull(),//创建时间
     updatedAt: integer("updated_at")
-    .$defaultFn(()=>dayjs().unix())
-    .$default(()=>dayjs().unix())
+    .$defaultFn(() => dayjs().unix())
+    .$onUpdateFn(() => dayjs().unix())
     .notNull(),//更新时间  
 });
