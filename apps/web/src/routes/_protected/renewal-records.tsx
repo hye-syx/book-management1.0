@@ -1,6 +1,5 @@
-import { BorrowApplication } from '#/components/borrow-application/borrow-application';
-import { BorrowRecords } from '#/components/borrow-records/borrow-records';
 import { AppSidebar } from '#/components/dashboard/app-sidebar';
+import { RenewalRecords } from '#/components/renewal-records/renewal-records';
 import { Separator } from '#/components/ui/separator';
 import {
   SidebarInset,
@@ -28,7 +27,7 @@ function renewalRecordsPage() {
           </div>
         </header>
         <div className='flex flex-1 flex-col gap-4 p-4 pt-0'>
-          <>耶耶耶</>
+          <RenewalRecords/>
         </div>
       </SidebarInset>
     </SidebarProvider>

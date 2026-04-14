@@ -1,5 +1,3 @@
-import type { RecordType } from '@repo/types';
-
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { deleteRecordsMutation, listRecordsQuery, returnBookMutation } from '#/queries/record.query';
@@ -20,9 +18,7 @@ import { EditRecordDialog } from './edit-record-dialog';
 export function BorrowRecords() {
   const [selectedRecordId, setSelectedRecordId] = useState<number | null>(null);
   const [recordDialogOpen, setRecordDialogOpen] = useState(false);
-  const { data: records } = useQuery<RecordType.RecordRequest[]>({
-    ...listRecordsQuery,
-  });
+  const { data: records } = useQuery(listRecordsQuery);
   const queryClient = useQueryClient();
   // 删除记录
  const deleteRecordMutation = useMutation({
