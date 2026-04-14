@@ -44,3 +44,13 @@ export const getRecordQuery = (recordId: number) => ({
     return await response.json();
   },
 });
+// 归还图书
+export const returnBookMutation = {
+  mutationKey: ['records', 'return'],
+  mutationFn: async (id: number) => {
+    const response = await apiClient.records[':id'].return.$patch({
+      param: { id: String(id) },
+    });
+    return await response.json();
+  },
+}

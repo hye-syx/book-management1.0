@@ -2,7 +2,7 @@ import type { RecordType } from '@repo/types';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
-import { deleteRecordsMutation, listRecordsQuery } from '#/queries/record.query';
+import { deleteRecordsMutation, listRecordsQuery, returnBookMutation } from '#/queries/record.query';
 import {
   Table,
   TableBody,
@@ -36,6 +36,13 @@ export function BorrowRecords() {
   const handleDelete = (id: number) => {
     deleteRecordMutation.mutate(id);
   };
+  const returnMutation = useMutation({
+    ...returnBookMutation,
+    onSuccess: () => {
+      // 刷新列表
+      queryClient.invalidateQueries({ queryKey: ['records', 'all'] });
+    },
+  });
   // 
   return (
     <div className='rounded-lg border border-gray-200 overflow-hidden'>
@@ -76,7 +83,13 @@ export function BorrowRecords() {
               <TableCell>{record.status}</TableCell>
               <TableCell>{record.borrowTotal}</TableCell>
               <TableCell className='text-center'>
-                <Button>归还</Button>
+                <Button
+                 onClick={()=>{
+                  // 调用归还接口
+                  returnMutation.mutate(record.id);
+                 }}
+                
+                >归还</Button>
                 <Button 
                 onClick={()=>{
                   if (confirm('确定删除吗？')){
