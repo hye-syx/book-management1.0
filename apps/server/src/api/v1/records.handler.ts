@@ -127,6 +127,46 @@ export const editRecordRoute = createRoute({
     },
   },
 });
+// 归还图书
+export const returnBookRoute = createRoute({
+  method: 'patch',
+  path: '/records/{id}/return',
+  request: {
+    params: z.object({
+      id: z.coerce.number(),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: recordSchema,
+        },
+      },
+      description: '归还图书',
+    },
+    401: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: '未登录',
+    },
+    403:{
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+      description: '只能归还自己的图书',
+    },
+  },
+});
 // 获取单个记录
 export const getRecordRoute = createRoute({
   method: 'get',
@@ -273,5 +313,73 @@ export const recordsApp = app
       bookTitle: record.books?.title || '',
       userName: record.user?.name || '',
     }, 200);
-}); 
+})
+.openapi(returnBookRoute,async (c) => {
+  const session = await getSession(c.req.raw.headers);
+  if (!session) {
+    return c.json({ message: '未登录' }, 401);
+  }
+  const { id } = c.req.valid('param');
+  try {
+    const returnRecord = await db.transaction(async (tx) => {
+      const [record] = await tx
+        .select()
+        .from(borrowRecords)
+        .where(eq(borrowRecords.id, id));
+      if (!record) {
+        throw new Error('借阅记录不存在');
+      }
+      if (session.user.role === 'reader' && record.userId !== session.user.id) {
+        throw new Error('只能归还自己的图书');
+      }
+      if (record.status === '已归还') {
+        throw new Error('该图书已归还');
+      }
+      const now = dayjs().unix();
+      const today = dayjs().startOf('day');
+      const dueDate = dayjs.unix(record.returnDate).startOf('day');
+      const overdueDays = Math.max(0, today.diff(dueDate, 'day'));
+
+      const [updateRecord] = await tx
+        .update(borrowRecords)
+        .set({
+          actualReturnDate: now,
+          overdueDays,
+          status: '已归还',
+          updatedAt: now,
+        })
+        .where(eq(borrowRecords.id, id))
+        .returning();
+
+      await tx
+        .update(books)
+        .set({
+          available: sql`${books.available} + ${record.borrowTotal}`,
+          status: '在馆',
+        })
+        .where(eq(books.id, record.bookId))
+        .returning();
+
+      const [fullRecord] = await tx
+        .select()
+        .from(borrowRecords)
+        .leftJoin(books, eq(borrowRecords.bookId, books.id))
+        .leftJoin(user, eq(borrowRecords.userId, user.id))
+        .where(eq(borrowRecords.id, id));
+      return {
+        ...updateRecord,
+        bookTitle: fullRecord?.books?.title || '',
+        userName: fullRecord?.user?.name || '',
+      }; 
+    });
+    return c.json(returnRecord,200)
+    
+  } catch (error) {
+     const message = error instanceof Error ? error.message : '审核失败';
+     if(message === '借阅记录不存在') return c.json({message},403) 
+     if(message === '只能归还自己的图书') return c.json({message},403) 
+     if(message === '该图书已归还') return c.json({message},403) 
+     return c.json({message},403)
+  }
+}) 
 ;

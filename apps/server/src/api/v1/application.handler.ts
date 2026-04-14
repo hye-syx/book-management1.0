@@ -1,8 +1,8 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { db } from '@repo/db';
 import { user } from '@repo/db/schema/auth-schema';
-import { bookStatusEnum, books } from '@repo/db/schema/book-schema';
-import { borrowApplications } from '@repo/db/schema/borrow-schema';
+import { books } from '@repo/db/schema/book-schema';
+import { borrowApplications, borrowRecords } from '@repo/db/schema/borrow-schema';
 import { applicationSchema } from '@repo/types/src/application/application.type';
 import { applicationDialogSchema } from '@repo/types/src/application/application-dialog.type';
 import { applicationReviewSchema } from '@repo/types/src/application/applicationReview.type';
@@ -319,9 +319,25 @@ export const applicationApp = app
               })
               .where(eq(borrowApplications.id, id))
               .returning();
+           
+            const today = dayjs().startOf('day');
+            const dueDate = dayjs.unix(application.returnDate).startOf('day');
+            // const overdueDays = Math.max(0, today.diff(dueDate, 'day'));
+            if(dueDate.isBefore(today)){
+              throw new Error('归还日期已过，不能批准');
+            }
+            await tx.insert(borrowRecords).values({
+              userId: application.userId,
+              bookId: application.bookId,
+              borrowTotal: application.borrowTotal,
+              borrowDate: application.borrowDate,
+              returnDate: application.returnDate,
+              overdueDays: 0,
+              status: '借阅中',
+            });
             return approvedApplication;
+            
           }
-
           default: {
             throw new Error('不支持的申请状态');
           }
@@ -336,6 +352,7 @@ export const applicationApp = app
       if (message === '只能取消自己的申请') return c.json({ message }, 403);
       if (message === '只有管理员或图书管理员才能通过或拒绝申请')return c.json({ message }, 403);
       if (message === '申请状态不是待审核') return c.json({ message }, 400);
+      if (message === '归还日期已过，不能批准') return c.json({ message }, 400);
       return c.json({ message }, 400);
     }
   });
