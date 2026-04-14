@@ -35,6 +35,7 @@ export const borrowStatusEnum = pgEnum('borrow_status', [
   '借阅中',
   '已归还',
   '逾期',
+  '已续借'
 ]);
 export const borrowRecords = pgTable("borrow_records", {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity(),

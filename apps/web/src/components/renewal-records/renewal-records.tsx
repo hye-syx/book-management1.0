@@ -7,7 +7,6 @@ import {
   TableHeader,
   TableRow,
 } from '../ui/table';
-import { Button } from '../ui/button';
 import { listRenewalQuery } from '#/queries/renewal.query';
 import { useQuery } from '@tanstack/react-query';
 
@@ -24,7 +23,7 @@ export function RenewalRecords() {
             <TableHead className='w-[100px]'>申请人</TableHead>
             <TableHead>图书名称</TableHead>
             <TableHead>申请日期</TableHead>
-            <TableHead>归还日期</TableHead>
+            <TableHead>续借归还日期</TableHead>
             <TableHead>借阅数量</TableHead>
             <TableHead className='text-center'>操作</TableHead>
           </TableRow>
