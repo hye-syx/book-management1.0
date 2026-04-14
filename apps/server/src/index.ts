@@ -1,6 +1,7 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { cors } from 'hono/cors';
 import { initRoutes } from './api/route';
+import { startOverdueRecordsScheduler } from './jobs/overdue-records.job';
 import { auth } from './lib/auth';
 
 const app = new OpenAPIHono();
@@ -20,6 +21,7 @@ app.on(['POST', 'GET'], '/api/auth/*', (c) => auth.handler(c.req.raw));
 // app.openapi(listBookRoute, listBookHandler);
 
 initRoutes(app);
+startOverdueRecordsScheduler();
 
 export default {
   port: 3001,
