@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from '../ui/select';
 import type {BookType} from '@repo/types';
+import { toast } from 'sonner';
 export function EditBookDialog({
   bookId,
   open,
@@ -64,6 +65,9 @@ export function EditBookDialog({
         id: bookId!,
         book: bookDataToSave,
       });
+    }
+    if(updateMutation.isSuccess) {
+      toast.success('修改成功');
     }
   };
   useEffect(() => {

@@ -13,6 +13,7 @@ import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import { Button } from '../ui/button';
 import { useState } from 'react';
 import { EditUserDialog } from './edit-user-dialog';
+import { toast } from 'sonner';
 
 export function User() {
   // 获取全部图书
@@ -28,6 +29,7 @@ export function User() {
     onSuccess: () => {
       // 刷新列表
       queryClient.invalidateQueries({ queryKey: ['user', 'all'] });
+      toast.success('删除成功')
     },
   });
   return (

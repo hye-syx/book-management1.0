@@ -46,7 +46,9 @@ export function BugReportForm({
       queryClient.invalidateQueries({
         queryKey: ['books'],
       });
+      toast.success('申请成功');
     },
+   
   });
   const form = useForm({
     defaultValues: {

@@ -2,7 +2,6 @@
 import { useForm } from '@tanstack/react-form';
 import { useMutation } from '@tanstack/react-query';
 import dayjs from 'dayjs';
-import * as React from 'react';
 import { toast } from 'sonner';
 import * as z from 'zod';
 import { addBookMutation } from '#/queries/book.query';
@@ -47,10 +46,11 @@ export function AddBookForm() {
   const addMutation = useMutation({
     ...addBookMutation,
     onSuccess: () => {
-      toast('Book added successfully');
+      form.reset();
+      toast.success('添加成功');
     },
     onError: (error) => {
-      toast.error('Failed to add book');
+      toast.error('添加失败');
       console.error(error);
     },
   });
@@ -70,20 +70,20 @@ export function AddBookForm() {
       onSubmit: formSchema,
     },
     onSubmit: async ({ value }) => {
-      toast('You submitted the following values:', {
-        description: (
-          <pre className='mt-2 w-[320px] overflow-x-auto rounded-md bg-code p-4 text-code-foreground'>
-            <code>{JSON.stringify(value, null, 2)}</code>
-          </pre>
-        ),
-        position: 'bottom-right',
-        classNames: {
-          content: 'flex flex-col gap-2',
-        },
-        style: {
-          '--border-radius': 'calc(var(--radius)  + 4px)',
-        } as React.CSSProperties,
-      });
+      // toast('You submitted the following values:', {
+      //   description: (
+      //     <pre className='mt-2 w-[320px] overflow-x-auto rounded-md bg-code p-4 text-code-foreground'>
+      //       <code>{JSON.stringify(value, null, 2)}</code>
+      //     </pre>
+      //   ),
+      //   position: 'bottom-right',
+      //   classNames: {
+      //     content: 'flex flex-col gap-2',
+      //   },
+      //   style: {
+      //     '--border-radius': 'calc(var(--radius)  + 4px)',
+      //   } as React.CSSProperties,
+      // });
       const bookData = {
         ...value,
         publicationDate: dayjs(value.publicationDate).unix(),
@@ -91,6 +91,7 @@ export function AddBookForm() {
       };
       console.log('bookData', bookData);
       addMutation.mutate(bookData);
+   
     },
   });
 

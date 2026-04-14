@@ -14,6 +14,7 @@ import {
 import { ApplicationBookDialog } from '../borrow-application/application-book-dialog';
 import { Button } from '../ui/button';
 import { EditBookDialog } from './edit-book-dialog';
+import { toast } from 'sonner';
 
 export function TableDemo() {
   // 获取点击编辑时图书的id
@@ -38,6 +39,7 @@ export function TableDemo() {
     onSuccess: () => {
       // 刷新列表
       queryClient.invalidateQueries({ queryKey: ['books', 'all'] });
+      toast.success('删除成功')
     },
   });
   const handleDelete = (id: number) => {
