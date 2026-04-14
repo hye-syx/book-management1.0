@@ -58,6 +58,11 @@ export const AppSidebarData = {
           url: '/borrow-records',
           roles: ['admin', 'librarian', 'reader'],
         },
+        {
+          title: '续借记录',
+          url: '/renewal-records',
+          roles: ['admin', 'librarian', 'reader'],
+        }
       ],
     },
     {

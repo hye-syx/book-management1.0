@@ -90,6 +90,7 @@ export function BorrowRecords() {
                  }}
                 
                 >归还</Button>
+                <Button>续借</Button>
                 <Button 
                 onClick={()=>{
                   if (confirm('确定删除吗？')){

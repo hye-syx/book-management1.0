@@ -14,6 +14,7 @@ import { Route as AuthRouteRouteImport } from './routes/auth/route'
 import { Route as ProtectedRouteRouteImport } from './routes/_protected/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
+import { Route as ProtectedRenewalRecordsRouteImport } from './routes/_protected/renewal-records'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
 import { Route as ProtectedBorrowRecordsRouteImport } from './routes/_protected/borrow-records'
 import { Route as ProtectedBorrowApplicationRouteImport } from './routes/_protected/borrow-application'
@@ -45,6 +46,11 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => AuthRouteRoute,
+} as any)
+const ProtectedRenewalRecordsRoute = ProtectedRenewalRecordsRouteImport.update({
+  id: '/renewal-records',
+  path: '/renewal-records',
+  getParentRoute: () => ProtectedRouteRoute,
 } as any)
 const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
   id: '/dashboard',
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/borrow-application': typeof ProtectedBorrowApplicationRoute
   '/borrow-records': typeof ProtectedBorrowRecordsRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/renewal-records': typeof ProtectedRenewalRecordsRoute
   '/auth/login': typeof AuthLoginRoute
   '/add-book': typeof ProtectedLimitsAddBookRoute
   '/user': typeof ProtectedUserUserRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByTo {
   '/borrow-application': typeof ProtectedBorrowApplicationRoute
   '/borrow-records': typeof ProtectedBorrowRecordsRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/renewal-records': typeof ProtectedRenewalRecordsRoute
   '/auth/login': typeof AuthLoginRoute
   '/add-book': typeof ProtectedLimitsAddBookRoute
   '/user': typeof ProtectedUserUserRoute
@@ -114,6 +122,7 @@ export interface FileRoutesById {
   '/_protected/borrow-application': typeof ProtectedBorrowApplicationRoute
   '/_protected/borrow-records': typeof ProtectedBorrowRecordsRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
+  '/_protected/renewal-records': typeof ProtectedRenewalRecordsRoute
   '/auth/login': typeof AuthLoginRoute
   '/_protected/_limits/add-book': typeof ProtectedLimitsAddBookRoute
   '/_protected/_user/user': typeof ProtectedUserUserRoute
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/borrow-application'
     | '/borrow-records'
     | '/dashboard'
+    | '/renewal-records'
     | '/auth/login'
     | '/add-book'
     | '/user'
@@ -138,6 +148,7 @@ export interface FileRouteTypes {
     | '/borrow-application'
     | '/borrow-records'
     | '/dashboard'
+    | '/renewal-records'
     | '/auth/login'
     | '/add-book'
     | '/user'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/_protected/borrow-application'
     | '/_protected/borrow-records'
     | '/_protected/dashboard'
+    | '/_protected/renewal-records'
     | '/auth/login'
     | '/_protected/_limits/add-book'
     | '/_protected/_user/user'
@@ -200,6 +212,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/login'
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof AuthRouteRoute
+    }
+    '/_protected/renewal-records': {
+      id: '/_protected/renewal-records'
+      path: '/renewal-records'
+      fullPath: '/renewal-records'
+      preLoaderRoute: typeof ProtectedRenewalRecordsRouteImport
+      parentRoute: typeof ProtectedRouteRoute
     }
     '/_protected/dashboard': {
       id: '/_protected/dashboard'
@@ -281,6 +300,7 @@ interface ProtectedRouteRouteChildren {
   ProtectedBorrowApplicationRoute: typeof ProtectedBorrowApplicationRoute
   ProtectedBorrowRecordsRoute: typeof ProtectedBorrowRecordsRoute
   ProtectedDashboardRoute: typeof ProtectedDashboardRoute
+  ProtectedRenewalRecordsRoute: typeof ProtectedRenewalRecordsRoute
 }
 
 const ProtectedRouteRouteChildren: ProtectedRouteRouteChildren = {
@@ -289,6 +309,7 @@ const ProtectedRouteRouteChildren: ProtectedRouteRouteChildren = {
   ProtectedBorrowApplicationRoute: ProtectedBorrowApplicationRoute,
   ProtectedBorrowRecordsRoute: ProtectedBorrowRecordsRoute,
   ProtectedDashboardRoute: ProtectedDashboardRoute,
+  ProtectedRenewalRecordsRoute: ProtectedRenewalRecordsRoute,
 }
 
 const ProtectedRouteRouteWithChildren = ProtectedRouteRoute._addFileChildren(
