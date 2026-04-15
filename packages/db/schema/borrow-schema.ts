@@ -56,6 +56,7 @@ export const borrowRecords = pgTable("borrow_records", {
 // 续借记录表
 export const renewalRecords = pgTable("renewal_records", {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    borrowRecordId:integer("borrow_record_id").references(() => borrowRecords.id,{ onDelete:"cascade" }).notNull(),
     userId: text("user_id").references(() => user.id,{ onDelete:"cascade" }).notNull(), //续借图书的读者ID
     bookId: integer("book_id").references(() => books.id,{ onDelete:"cascade" }).notNull(),//续借图书ID
     borrowDate: integer("borrow_date").notNull(),//续借日期

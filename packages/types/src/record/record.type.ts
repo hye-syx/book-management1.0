@@ -9,7 +9,7 @@ export const recordSchema = z.object({
   actualReturnDate: z.number().optional().nullable(),
   overdueDays: z.number().optional().nullable(),
   borrowTotal: z.number(),
-  status: z.enum(['借阅中', '已归还', '逾期']),
+  status: z.enum(['借阅中', '已归还', '逾期','已续借']),
   userName: z.string(),
   bookTitle: z.string(),
   createdAt: z.number(),
