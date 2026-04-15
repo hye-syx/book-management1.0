@@ -9,6 +9,12 @@ import { applicationReviewSchema } from '@repo/types/src/application/application
 import { applicationUpdateSchema } from '@repo/types/src/application/applicationUpdate.type';
 import dayjs from 'dayjs';
 import { asc, eq, sql } from 'drizzle-orm';
+import {
+  badRequest,
+  errorSchema,
+  forbidden,
+  unauthorized,
+} from 'server/src/lib/api-error';
 import { getSession } from 'server/src/lib/get-session';
 
 const app = new OpenAPIHono();
@@ -29,9 +35,7 @@ export const listApplicationRoute = createRoute({
     401: {
       content: {
         'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
+          schema: errorSchema,
         },
       },
       description: '未登录',
@@ -64,9 +68,7 @@ export const createApplicationRoute = createRoute({
     401: {
       content: {
         'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
+          schema: errorSchema,
         },
       },
       description: '未登录',
@@ -74,9 +76,7 @@ export const createApplicationRoute = createRoute({
     400: {
       content: {
         'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
+          schema: errorSchema,
         },
       },
       description: '参数错误',
@@ -112,9 +112,7 @@ export const reviewApplicationRoute = createRoute({
     401: {
       content: {
         'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
+          schema: errorSchema,
         },
       },
       description: '未登录',
@@ -122,9 +120,7 @@ export const reviewApplicationRoute = createRoute({
     400: {
       content: {
         'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
+          schema: errorSchema,
         },
       },
       description: '参数错误',
@@ -132,9 +128,7 @@ export const reviewApplicationRoute = createRoute({
     403: {
       content: {
         'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
+          schema: errorSchema,
         },
       },
       description: '权限不足',
@@ -146,7 +140,7 @@ export const applicationApp = app
   .openapi(listApplicationRoute, async (c) => {
     const session = await getSession(c.req.raw.headers);
     if (!session) {
-      return c.json({ message: '未登录' }, 401);
+      throw unauthorized();
     }
     if(session.user.role === 'reader') {
       // 只能查看自己的申请
@@ -185,7 +179,7 @@ export const applicationApp = app
   .openapi(createApplicationRoute, async (c) => {
     const session = await getSession(c.req.raw.headers);
     if (!session) {
-      return c.json({ message: '未登录' }, 401);
+      throw unauthorized();
     }
     const body = await c.req.json();
     const application = applicationDialogSchema.parse(body);
@@ -194,167 +188,147 @@ export const applicationApp = app
     const borrowTotal = application.borrowTotal;
     const bookId = application.bookId;
     if (borrowDate >= returnDate) {
-      return c.json({ message: '借阅日期不能早于归还日期' }, 400);
+      throw badRequest('借阅日期不能早于归还日期');
     }
-    try {
-      const [book] = await db.select().from(books).where(eq(books.id, bookId));
-      if (!book) {
-        throw new Error('书籍不存在');
-      }
-      if (book.available < borrowTotal) {
-        throw new Error('可借阅书籍不够');
-      }
+    const [book] = await db.select().from(books).where(eq(books.id, bookId));
+    if (!book) {
+      throw badRequest('书籍不存在');
+    }
+    if (book.available < borrowTotal) {
+      throw badRequest('可借阅书籍不够');
+    }
 
-      const addApplication = await db.transaction(async (tx) => {
+    const addApplication = await db.transaction(async (tx) => {
+      await tx
+        .update(books)
+        .set({
+          available: book.available - borrowTotal,
+        })
+        .where(eq(books.id, bookId));
+      const [applications] = await tx
+        .insert(borrowApplications)
+        .values({
+          ...application,
+          userId: session.user.id,
+          status: '待审核',
+          createdAt: dayjs().unix(),
+          updatedAt: dayjs().unix(),
+        })
+        .returning();
+      const remainingAvailable = book.available - borrowTotal;
+      if (!remainingAvailable) {
         await tx
           .update(books)
           .set({
-            available: book.available - borrowTotal,
-          })
-          .where(eq(books.id, bookId));
-        const [applications] = await tx
-          .insert(borrowApplications)
-          .values({
-            ...application,
-            userId: session.user.id,
-            status: '待审核',
-            createdAt: dayjs().unix(),
+            status: '借出', // 借阅中
             updatedAt: dayjs().unix(),
           })
-          .returning();
-        const remainingAvailable = book.available - borrowTotal;
-        if (!remainingAvailable) {
-          await tx
-            .update(books)
-            .set({
-              status: '借出', // 借阅中
-              updatedAt: dayjs().unix(),
-            })
-            .where(eq(books.id, bookId));
-        }
-        return applications;
-      });
-
-      return c.json(addApplication, 200);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : '审核失败';
-      if(message === '借阅日期不能早于归还日期' || message === '书籍不存在' || message === '可借阅书籍不够') {
-        return c.json({ message }, 400);
+          .where(eq(books.id, bookId));
       }
-      return c.json({ message: '创建借阅申请失败' }, 400);
-    }
+      return applications;
+    });
+
+    return c.json(addApplication, 200);
   })
 
   .openapi(reviewApplicationRoute, async (c) => {
     // 验证是否登录
     const session = await getSession(c.req.raw.headers);
     if (!session) {
-      return c.json({ message: '未登录' }, 401);
+      throw unauthorized();
     }
     const { id } = c.req.valid('param');
     const body = await c.req.json();
     const { status } = applicationReviewSchema.parse(body);
-    try {
-      const updatedApplication = await db.transaction(async (tx) => {
-        const [application] = await tx
-          .select()
-          .from(borrowApplications)
-          .where(eq(borrowApplications.id, id));
-        if (!application) {
-          throw new Error('申请不存在');
+    const updatedApplication = await db.transaction(async (tx) => {
+      const [application] = await tx
+        .select()
+        .from(borrowApplications)
+        .where(eq(borrowApplications.id, id));
+      if (!application) {
+        throw badRequest('申请不存在');
+      }
+      if (application.status !== '待审核') {
+        throw badRequest('申请状态不是待审核');
+      }
+      // 权限设置
+      if (status === '已取消' && application.userId !== session.user.id && !(session.user.role === 'admin' || session.user.role === 'librarian')) {
+        throw forbidden('只能取消自己的申请');
+      }
+      if((status === '已批准' || status === '已拒绝') && session.user.role === 'reader') {
+        throw forbidden('只有管理员或图书管理员才能通过或拒绝申请');
+      }
+      switch (status) {
+        case '已拒绝': {
+          const [rejectApplication] = await tx
+            .update(borrowApplications)
+            .set({
+              status: '已拒绝',
+              updatedAt: dayjs().unix(),
+            })
+            .where(eq(borrowApplications.id, id))
+            .returning();
+          await tx
+            .update(books)
+            .set({
+              available: sql`${books.available} + ${application.borrowTotal}`,
+            })
+            .where(eq(books.id, application.bookId));
+          return rejectApplication;
         }
-        if (application.status !== '待审核') {
-          throw new Error('申请状态不是待审核');
-        }
-        // 权限设置
-        if (status === '已取消' && application.userId !== session.user.id && !(session.user.role === 'admin' || session.user.role === 'librarian')) {
-          throw new Error('只能取消自己的申请');
-        }
-        if((status === '已批准' || status === '已拒绝') && session.user.role === 'reader') {
-          throw new Error('只有管理员或图书管理员才能通过或拒绝申请');
-        }
-        switch (status) {
-          case '已拒绝': {
-            const [rejectApplication] = await tx
-              .update(borrowApplications)
-              .set({
-                status: '已拒绝',
-                updatedAt: dayjs().unix(),
-              })
-              .where(eq(borrowApplications.id, id))
-              .returning();
-            await tx
+
+        case '已取消': {
+          const [cancelApplication] = await tx
+            .update(borrowApplications)
+            .set({
+              status: '已取消',
+              updatedAt: dayjs().unix(),
+            })
+            .where(eq(borrowApplications.id, id))
+            .returning();
+             await tx
               .update(books)
               .set({
                 available: sql`${books.available} + ${application.borrowTotal}`,
               })
               .where(eq(books.id, application.bookId));
-            return rejectApplication;
-          }
-
-          case '已取消': {
-            const [cancelApplication] = await tx
-              .update(borrowApplications)
-              .set({
-                status: '已取消',
-                updatedAt: dayjs().unix(),
-              })
-              .where(eq(borrowApplications.id, id))
-              .returning();
-               await tx
-                .update(books)
-                .set({
-                  available: sql`${books.available} + ${application.borrowTotal}`,
-                })
-                .where(eq(books.id, application.bookId));
-            return cancelApplication;
-          }
-
-          case '已批准': {
-            const [approvedApplication] = await tx
-              .update(borrowApplications)
-              .set({
-                status: '已批准',
-                updatedAt: dayjs().unix(),
-              })
-              .where(eq(borrowApplications.id, id))
-              .returning();
-           
-            const today = dayjs().startOf('day');
-            const dueDate = dayjs.unix(application.returnDate).startOf('day');
-            // const overdueDays = Math.max(0, today.diff(dueDate, 'day'));
-            if(dueDate.isBefore(today)){
-              throw new Error('归还日期已过，不能批准');
-            }
-            await tx.insert(borrowRecords).values({
-              userId: application.userId,
-              bookId: application.bookId,
-              borrowTotal: application.borrowTotal,
-              borrowDate: application.borrowDate,
-              returnDate: application.returnDate,
-              overdueDays: 0,
-              status: '借阅中',
-            });
-            return approvedApplication;
-            
-          }
-          default: {
-            throw new Error('不支持的申请状态');
-          }
+          return cancelApplication;
         }
-      });
-      return c.json(updatedApplication, 200);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : '审核失败';
-      if (message === '申请不存在') {
-        return c.json({ message }, 400);
+
+        case '已批准': {
+          const [approvedApplication] = await tx
+            .update(borrowApplications)
+            .set({
+              status: '已批准',
+              updatedAt: dayjs().unix(),
+            })
+            .where(eq(borrowApplications.id, id))
+            .returning();
+         
+          const today = dayjs().startOf('day');
+          const dueDate = dayjs.unix(application.returnDate).startOf('day');
+          // const overdueDays = Math.max(0, today.diff(dueDate, 'day'));
+          if(dueDate.isBefore(today)){
+            throw badRequest('归还日期已过，不能批准');
+          }
+          await tx.insert(borrowRecords).values({
+            userId: application.userId,
+            bookId: application.bookId,
+            borrowTotal: application.borrowTotal,
+            borrowDate: application.borrowDate,
+            returnDate: application.returnDate,
+            overdueDays: 0,
+            status: '借阅中',
+          });
+          return approvedApplication;
+          
+        }
+        default: {
+          throw badRequest('不支持的申请状态');
+        }
       }
-      if (message === '只能取消自己的申请') return c.json({ message }, 403);
-      if (message === '只有管理员或图书管理员才能通过或拒绝申请')return c.json({ message }, 403);
-      if (message === '申请状态不是待审核') return c.json({ message }, 400);
-      if (message === '归还日期已过，不能批准') return c.json({ message }, 400);
-      return c.json({ message }, 400);
-    }
+    });
+    return c.json(updatedApplication, 200);
   });
 
 export type ApplicationAppType = typeof applicationApp;

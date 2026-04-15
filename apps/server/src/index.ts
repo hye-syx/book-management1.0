@@ -1,5 +1,6 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { cors } from 'hono/cors';
+import { HTTPException } from 'hono/http-exception';
 import { initRoutes } from './api/route';
 import { startOverdueRecordsScheduler } from './jobs/overdue-records.job';
 import { auth } from './lib/auth';
@@ -16,6 +17,15 @@ app.use(
 );
 
 app.on(['POST', 'GET'], '/api/auth/*', (c) => auth.handler(c.req.raw));
+
+app.onError((err, c) => {
+  if (err instanceof HTTPException) {
+    return c.json({ message: err.message }, err.status);
+  }
+
+  console.error(err);
+  return c.json({ message: '服务器内部错误' }, 500);
+});
 
 ///获取全部图书
 // app.openapi(listBookRoute, listBookHandler);

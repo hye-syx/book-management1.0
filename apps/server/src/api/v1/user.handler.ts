@@ -4,6 +4,11 @@ import { eq } from 'drizzle-orm';
 import { user } from '@repo/db/schema/auth-schema';
 import { userSchema } from '@repo/types/src/user/user.type';
 import { updateUserSchema } from '@repo/types/src/user/update-user.type';
+import {
+  errorSchema,
+  forbidden,
+  unauthorized,
+} from 'server/src/lib/api-error';
 import { getSession } from 'server/src/lib/get-session';
 
 const app = new OpenAPIHono();
@@ -23,9 +28,7 @@ export const listUserRoute = createRoute({
     401: {
       content: {
         'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
+          schema: errorSchema,
         },
       },
       description: '未登录',
@@ -33,9 +36,7 @@ export const listUserRoute = createRoute({
     403: {
       content: {
         'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
+          schema: errorSchema,
         },
       },
       description: '没有权限',
@@ -63,9 +64,7 @@ export const getUserRoute = createRoute({
     401: {
       content: {
         'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
+          schema: errorSchema,
         },
       },
       description: '未登录',
@@ -73,9 +72,7 @@ export const getUserRoute = createRoute({
     403: {
       content: {
         'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
+          schema: errorSchema,
         },
       },
       description: '没有权限',
@@ -110,9 +107,7 @@ export const updateUserRoute = createRoute({
     401: {
       content: {
         'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
+          schema: errorSchema,
         },
       },
       description: '未登录',
@@ -120,9 +115,7 @@ export const updateUserRoute = createRoute({
     403: {
       content: {
         'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
+          schema: errorSchema,
         },
       },
       description: '没有权限',
@@ -152,9 +145,7 @@ export const deleteUserRoute=createRoute({
     401: {
       content: {
         'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
+          schema: errorSchema,
         },
       },
       description: '未登录',
@@ -162,9 +153,7 @@ export const deleteUserRoute=createRoute({
     403:{
       content: {
         'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
+          schema: errorSchema,
         },
       },
       description: '没有权限',
@@ -176,10 +165,10 @@ export const userApp = app
   .openapi(listUserRoute, async (c) => {
     const session = await getSession(c.req.raw.headers);
     if (!session) {
-      return c.json({ message: '未登录' }, 401);
+      throw unauthorized();
     }
     if (session.user.role !== 'admin') {
-      return c.json({ message: '权限不足' }, 403);
+      throw forbidden('权限不足');
     }
     const users = await db.select().from(user);
     return c.json(users, 200);
@@ -187,10 +176,10 @@ export const userApp = app
   .openapi(updateUserRoute, async (c) => {
     const session = await getSession(c.req.raw.headers);
     if (!session) {
-      return c.json({ message: '未登录' }, 401);
+      throw unauthorized();
     }
     if (session.user.role !== 'admin') {
-      return c.json({ message: '权限不足' }, 403);
+      throw forbidden('权限不足');
     }
     const { id } = c.req.param();
     const body = await c.req.json();
@@ -208,10 +197,10 @@ export const userApp = app
   .openapi(getUserRoute, async (c) => {
     const session = await getSession(c.req.raw.headers);
     if (!session) {
-      return c.json({ message: '未登录' }, 401);
+      throw unauthorized();
     }
     if (session.user.role !== 'admin') {
-      return c.json({ message: '权限不足' }, 403);
+      throw forbidden('权限不足');
     }
     const { id } = c.req.param();
     const [userResult] = await db.select().from(user).where(eq(user.id, id));
@@ -220,10 +209,10 @@ export const userApp = app
   .openapi(deleteUserRoute, async (c) => {
     const session = await getSession(c.req.raw.headers);
     if (!session) {
-      return c.json({ message: '未登录' }, 401);
+      throw unauthorized();
     }
     if (session.user.role !== 'admin') {
-      return c.json({ message: '权限不足' }, 403);
+      throw forbidden('权限不足');
     }
     const { id } = c.req.param();
     await db.delete(user).where(eq(user.id, id));
