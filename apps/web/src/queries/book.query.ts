@@ -9,11 +9,13 @@ export const getBookQuery = (id: number) => ({
     const response = await apiClient.books[':id'].$get({
       param: { id: String(id) },
     });
+    const data = await response.json();
     if (!response.ok) {
-      throw new Error('获取图书失败');
+      const message = typeof data === 'object' && data !== null && 'message' in data ? data.message : '获取图书失败';
+      throw new Error(message);
     }
 
-    return await response.json();
+    return data;
   },
 });
 
@@ -26,7 +28,16 @@ export const listBookQuery = {
   // }
   queryFn: async () => {
     const response = await apiClient.books.$get();
-    return await response.json();
+    const data = await response.json();
+    if (!response.ok) {
+      const message =
+        typeof data === 'object' && data !== null && 'message' in data
+          ? data.message
+          : '获取图书失败';
+      throw new Error(message);
+    }
+
+    return data;
   },
 };
 //删除图书
@@ -36,7 +47,16 @@ export const deleteBookMutation = {
     const response = await apiClient.books[':id'].$delete({
       param: { id: String(id) },
     });
-    return await response.json();
+    const data = await response.json();
+    if (!response.ok) {
+      const message =
+        typeof data === 'object' && data !== null && 'message' in data
+          ? data.message
+          : '删除图书失败';
+      throw new Error(message);
+    }
+
+    return data;
   },
 };
 //修改图书
@@ -47,7 +67,16 @@ export const updateBookMutation = {
       param: { id: String(id) },
       json: book,
     });
-    return await response.json();
+    const data = await response.json();
+    if (!response.ok) {
+      const message =
+        typeof data === 'object' && data !== null && 'message' in data
+          ? data.message
+          : '修改图书失败';
+      throw new Error(message);
+    }
+
+    return data;
   },
 };
 // 增加单本图书
@@ -57,7 +86,16 @@ export const addBookMutation = {
     const response = await apiClient.books.$post({
       json: book,
     });
-    return await response.json();
+    const data = await response.json();
+    if (!response.ok) {
+      const message =
+        typeof data === 'object' && data !== null && 'message' in data
+          ? data.message
+          : '增加图书失败';
+      throw new Error(message);
+    }
+
+    return data;
   }
 };
 //

@@ -41,6 +41,9 @@ export function TableDemo() {
       queryClient.invalidateQueries({ queryKey: ['books', 'all'] });
       toast.success('删除成功')
     },
+    onError: (error) => {
+      toast.error(error.message)
+    }
   });
   const handleDelete = (id: number) => {
     deleteMutation.mutate(id);

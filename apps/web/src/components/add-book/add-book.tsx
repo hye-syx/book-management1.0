@@ -50,8 +50,7 @@ export function AddBookForm() {
       toast.success('添加成功');
     },
     onError: (error) => {
-      toast.error('添加失败');
-      console.error(error);
+      toast.error(error.message);
     },
   });
   const form = useForm({
@@ -91,6 +90,7 @@ export function AddBookForm() {
       };
       console.log('bookData', bookData);
       addMutation.mutate(bookData);
+      
    
     },
   });
