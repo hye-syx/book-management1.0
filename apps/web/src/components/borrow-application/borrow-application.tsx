@@ -31,7 +31,7 @@ export function BorrowApplication() {
     onSuccess: () => {
       // 刷新列表
       queryClient.invalidateQueries({ queryKey: ['applications', 'all'] });
-      toast.success('审批成功');
+      toast.success('操作成功');
     },
     onError: (error) => {
       toast.error(error.message);

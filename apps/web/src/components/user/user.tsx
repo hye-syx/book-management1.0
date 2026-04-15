@@ -23,7 +23,7 @@ export function User() {
   const [editUserId, setEditUserId] = useState<string | ''>('');
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const queryClient = useQueryClient();
-  // 删除图书
+  // 删除
   const deleteMutation = useMutation({
     ...deleteUserMutation,
     onSuccess: () => {
@@ -31,6 +31,9 @@ export function User() {
       queryClient.invalidateQueries({ queryKey: ['user', 'all'] });
       toast.success('删除成功')
     },
+     onError: (error) => {
+      toast.error(error.message)
+    }
   });
   return (
     <div className='rounded-lg border border-gray-200 overflow-hidden'>

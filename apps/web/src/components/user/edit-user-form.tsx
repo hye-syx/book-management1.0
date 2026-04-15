@@ -40,6 +40,9 @@ export function UpdateUserForm({
       onOpenChange(false);
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
+     onError: (error) => {
+       toast.error(error.message)
+    }
   });
   const form = useForm({
     defaultValues: {

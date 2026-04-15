@@ -19,7 +19,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { editRecordMutation, getRecordQuery } from '#/queries/record.query';
 import { useEffect } from 'react';
 import dayjs from 'dayjs';
-import type { UpdateRecordRequest } from '@repo/types/src/record/update-record.type';
+  
 import { toast } from 'sonner';
 
 
