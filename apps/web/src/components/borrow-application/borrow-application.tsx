@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '../ui/button';
 import { authClient } from '#/lib/auth-client';
+import { toast } from 'sonner';
 
 export function BorrowApplication() {
   const { data: applications } = useQuery<ApplicationType.Application[]>({
@@ -30,6 +31,10 @@ export function BorrowApplication() {
     onSuccess: () => {
       // 刷新列表
       queryClient.invalidateQueries({ queryKey: ['applications', 'all'] });
+      toast.success('审批成功');
+    },
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
   const handelReview = (

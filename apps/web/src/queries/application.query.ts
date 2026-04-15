@@ -7,10 +7,16 @@ export const listApplicationQuery = {
   queryKey: ['applications', 'all'],
   queryFn: async () => {
     const response = await apiClient.applications.$get();
+    const data = await response.json();
     if (!response.ok) {
-      throw new Error('Failed to fetch users');
+      const message =
+        typeof data === 'object' && data !== null && 'message' in data
+          ? data.message
+          : '获取图书申请失败';
+      throw new Error(message);
     }
-    return await response.json();
+
+    return data;
   },
 };
 // 新增申请
@@ -20,7 +26,16 @@ export const addApplicationMutation = {
     const response = await apiClient.applications.$post({
       json: data,
     });
-    return await response.json();
+     const result = await response.json();
+    if (!response.ok) {
+      const message =
+        typeof result === 'object' && result !== null && 'message' in result
+          ? result.message
+          : '增加申请失败';
+      throw new Error(message);
+    }
+
+    return result;
   },
 };
 // 批准申请
@@ -37,6 +52,15 @@ export const reviewApplicationMutation = {
       param: { id: String(id) },
       json: { status },
     });
-    return await response.json();
+    const data = await response.json();
+    if (!response.ok) {
+      const message =
+        typeof data === 'object' && data !== null && 'message' in data
+          ? data.message
+          : '批准申请失败';
+      throw new Error(message);
+    }
+
+    return data;
   },
 };

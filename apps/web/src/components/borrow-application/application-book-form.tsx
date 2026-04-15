@@ -48,7 +48,9 @@ export function BugReportForm({
       });
       toast.success('申请成功');
     },
-   
+    onError: (error) => {
+      toast.error(error.message);
+    },
   });
   const form = useForm({
     defaultValues: {
@@ -227,7 +229,7 @@ export function BugReportForm({
         </Button>
         <Button
           type='submit'   
-          // onClick={() => form.handleSubmit()}
+        
         >
           提交申请
         </Button>
