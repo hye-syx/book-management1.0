@@ -7,3 +7,4 @@ export * as UpdateBookType from './src/book/update.type';
 export * as UserType from './src/user/user.type';
 export * as UserUpdateType from'./src/user/update-user.type'
 export * as RecordType from './src/record/record.type'
+export * as RenewalType from './src/renewal/renewal.type'

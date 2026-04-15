@@ -13,6 +13,7 @@ import { Button } from '../ui/button';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { EditRecordDialog } from './edit-record-dialog';
+import { addRenewalMutation } from '#/queries/renewal.query';
 
 
 export function BorrowRecords() {
@@ -38,6 +39,17 @@ export function BorrowRecords() {
       // 刷新列表
       queryClient.invalidateQueries({ queryKey: ['records', 'all'] });
     },
+  });
+  const addMutation = useMutation({
+    ...addRenewalMutation,
+    onSuccess: () => {
+      // 刷新列表
+      queryClient.invalidateQueries({ queryKey: ['records', 'all'] });
+      toast.success("续借成功") 
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    }
   });
   // 
   return (
@@ -86,7 +98,13 @@ export function BorrowRecords() {
                  }}
                 
                 >归还</Button>
-                <Button>续借</Button>
+                <Button
+                  onClick={()=>{
+                    // 调用续借接口
+                    addMutation.mutate(record.id);
+                  }}
+                
+                >续借</Button>
                 <Button 
                 onClick={()=>{
                   if (confirm('确定删除吗？')){

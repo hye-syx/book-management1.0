@@ -9,9 +9,10 @@ import {
 } from '../ui/table';
 import { listRenewalQuery } from '#/queries/renewal.query';
 import { useQuery } from '@tanstack/react-query';
+import { RenewalType } from '@repo/types';
 
 export function RenewalRecords() {
-  const { data: renewals } = useQuery(listRenewalQuery);
+  const { data: renewals } = useQuery<RenewalType.RenewalRequest[]>(listRenewalQuery);
   
  
   return (
@@ -25,7 +26,6 @@ export function RenewalRecords() {
             <TableHead>申请日期</TableHead>
             <TableHead>续借归还日期</TableHead>
             <TableHead>借阅数量</TableHead>
-            <TableHead className='text-center'>操作</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -40,9 +40,6 @@ export function RenewalRecords() {
                 {dayjs.unix(renewal.returnDate).format('YYYY-MM-DD HH:mm:ss')}
               </TableCell>
               <TableCell>{renewal.borrowTotal}</TableCell>
-              <TableCell className='text-center'>
-               
-              </TableCell>
             </TableRow>
           ))}
         </TableBody>
