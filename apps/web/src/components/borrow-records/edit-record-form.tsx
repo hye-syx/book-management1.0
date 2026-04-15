@@ -20,6 +20,7 @@ import { editRecordMutation, getRecordQuery } from '#/queries/record.query';
 import { useEffect } from 'react';
 import dayjs from 'dayjs';
 import type { UpdateRecordRequest } from '@repo/types/src/record/update-record.type';
+import { toast } from 'sonner';
 
 
 const formSchema = z.object({
@@ -51,7 +52,11 @@ export function UpdateRecordForm({
       queryClient.invalidateQueries({
         queryKey: ['records'],
       });
+      toast.success('更新成功');
     },
+     onError: (error) => {
+          toast.error(error.message)
+    }
   });
 
 

@@ -22,14 +22,17 @@ export function BorrowRecords() {
   const { data: records } = useQuery(listRecordsQuery);
   const queryClient = useQueryClient();
   // 删除记录
- const deleteRecordMutation = useMutation({
-    ...deleteRecordsMutation,
-    onSuccess: () => {
-      // 刷新列表
-      queryClient.invalidateQueries({ queryKey: ['records', 'all'] });
-      toast.success("删除成功")
-    },
-  });
+const deleteRecordMutation = useMutation({
+  ...deleteRecordsMutation,
+  onSuccess: () => {
+    // 刷新列表
+    queryClient.invalidateQueries({ queryKey: ['records', 'all'] });
+    toast.success('删除成功');
+  },
+  onError: (error) => {
+    toast.error(error.message);
+  },
+});
   const handleDelete = (id: number) => {
     deleteRecordMutation.mutate(id);
   };
@@ -38,6 +41,9 @@ export function BorrowRecords() {
     onSuccess: () => {
       // 刷新列表
       queryClient.invalidateQueries({ queryKey: ['records', 'all'] });
+    },
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
   const addMutation = useMutation({
