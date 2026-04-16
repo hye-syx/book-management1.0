@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { toast } from 'sonner';
 import * as z from 'zod';
+import { useListCategory } from '#/hooks/use-category';
 import { addBookMutation } from '#/queries/book.query';
 import { Button } from '@/components/ui/button';
 import {
@@ -43,6 +44,7 @@ const formSchema = z.object({
 });
 
 export function AddBookForm() {
+  const { data: categoryData } = useListCategory();
   const addMutation = useMutation({
     ...addBookMutation,
     onSuccess: () => {
@@ -253,17 +255,25 @@ export function AddBookForm() {
                 return (
                   <Field data-invalid={isInvalid}>
                     <FieldLabel htmlFor={field.name}>分类</FieldLabel>
-
-                    <Input
-                      id={field.name}
-                      name={field.name}
+                    <Select
                       value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid}
-                      placeholder='请输入分类'
-                      autoComplete='off'
-                    />
+                      onValueChange={(value) => field.handleChange(value)}
+                    >
+                      <SelectTrigger
+                        id={field.name}
+                        className='w-full'
+                        aria-invalid={isInvalid}
+                      >
+                        <SelectValue placeholder='请选择分类' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categoryData?.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
 
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
