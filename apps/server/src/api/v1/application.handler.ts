@@ -8,7 +8,7 @@ import { applicationDialogSchema } from '@repo/types/src/application/application
 import { applicationReviewSchema } from '@repo/types/src/application/applicationReview.type';
 import { applicationUpdateSchema } from '@repo/types/src/application/applicationUpdate.type';
 import dayjs from 'dayjs';
-import { asc, eq, sql } from 'drizzle-orm';
+import { asc, eq, sql ,and,ne} from 'drizzle-orm';
 import {
   badRequest,
   errorSchema,
@@ -197,7 +197,42 @@ export const applicationApp = app
     if (book.available < borrowTotal) {
       throw badRequest('可借阅书籍不够');
     }
-
+    // 校验是否有逾期
+    const [overdueRecords] = await db
+    .select()
+    .from(borrowRecords)
+    .where(and(eq(borrowRecords.userId, session.user.id),eq(borrowRecords.status,'逾期')))
+    if(overdueRecords) {
+      throw badRequest('您有未归还的书籍，请先归还后再申请借阅');
+    }
+  //  检查当前读者借阅图书是否满5本
+    // 1、先检查借阅记录里的
+    const totalBorrowRecord = await db
+    .select()
+    .from(borrowRecords)
+    .where(
+      and(
+        eq(borrowRecords.userId, session.user.id),
+        ne(borrowRecords.status,'已归还')
+      )
+    )
+    const totalBorrowCount = totalBorrowRecord.reduce((acc, record) => acc + record.borrowTotal, 0);
+    // 2.检查待审核的
+    const totalApplication = await db
+      .select()
+      .from(borrowApplications)
+      .where(
+        and(
+          eq(borrowApplications.userId, session.user.id),
+          eq(borrowApplications.status, '待审核'),
+        ),
+      );
+      const totalApplicationCount = totalApplication.reduce((acc, application) => acc + application.borrowTotal, 0);
+      const total = totalBorrowCount + totalApplicationCount;
+      if(total > 5 || application.borrowTotal > 5 || total+application.borrowTotal > 5) {
+        
+        throw badRequest('您当前借阅的书籍数量已达上限（5本）');
+      }
     const addApplication = await db.transaction(async (tx) => {
       await tx
         .update(books)
@@ -205,12 +240,22 @@ export const applicationApp = app
           available: book.available - borrowTotal,
         })
         .where(eq(books.id, bookId));
+      const borrowDate = application.borrowDate;
+      const returnDate = application.returnDate;
+
+      const diffDays = dayjs.unix(returnDate).diff(dayjs.unix(borrowDate), 'day');
+      if(diffDays>30){
+        throw badRequest('借阅最大期限为30天')
+      }
+
       const [applications] = await tx
         .insert(borrowApplications)
         .values({
-          ...application,
+          ...application, 
           userId: session.user.id,
           status: '待审核',
+          borrowDate,
+          returnDate,
           createdAt: dayjs().unix(),
           updatedAt: dayjs().unix(),
         })

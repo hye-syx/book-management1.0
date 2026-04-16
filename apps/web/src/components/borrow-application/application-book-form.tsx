@@ -59,8 +59,8 @@ export function BugReportForm({
       userName: userName,
       bookTitle: books?.title || '',
       borrowTotal: 0,
-      borrowDate: '',
-      returnDate: '',
+      borrowDate: dayjs().format('YYYY-MM-DD'),
+      returnDate: dayjs().add(30, 'day').format('YYYY-MM-DD'),
     },
     validators: {
       onSubmit: formSchema,
