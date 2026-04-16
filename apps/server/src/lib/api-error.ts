@@ -5,6 +5,17 @@ export const errorSchema = z.object({
   message: z.string(),
 });
 
+export type ApiErrorResponse = z.infer<typeof errorSchema>;
+
+export const errorResponse = (description: string) => ({
+  content: {
+    'application/json': {
+      schema: errorSchema,
+    },
+  },
+  description,
+});
+
 export class AppError extends HTTPException {
   constructor(status: 400 | 401 | 403 | 404 | 409 | 500, message: string) {
     super(status, { message });

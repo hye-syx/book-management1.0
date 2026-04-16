@@ -1,14 +1,14 @@
 import { apiClient } from "#/lib/api-client";
+import { throwApiError } from "#/lib/api-error";
 
 export const listRenewalQuery = {
   queryKey: ['renewals', 'all'],
   queryFn: async () => {
     const response = await apiClient.renewal.$get();
-    const data = await response.json();
     if (!response.ok) {
-      throw new Error(data.message || '获取续借记录失败');
+      return throwApiError(response, '获取续借记录失败');
     }
-    return data;
+    return await response.json();
   },
 };
 
@@ -18,10 +18,9 @@ export const addRenewalMutation = {
      param:{id:(String(id))}
     });
 
-    const data = await response.json();
     if (!response.ok) {
-      throw new Error(data.message || '添加续借记录失败');
+      return throwApiError(response, '添加续借记录失败');
     }
-    return data;
+    return await response.json();
   },
 };
