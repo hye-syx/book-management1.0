@@ -4,17 +4,19 @@ import { throwApiError } from '#/lib/api-error';
 import { apiClient } from '#/lib/api-client';
 
 // 获取所有图书的申请
-export const listApplicationQuery = {
-  queryKey: ['applications', 'all'],
+export const listApplicationQuery = (keyword: string) => ({
+  queryKey: ['applications', 'all', keyword],
   queryFn: async () => {
-    const response = await apiClient.applications.$get();
+    const response = await apiClient.applications.$get({
+      query: { keyword },
+    });
     if (!response.ok) {
       return throwApiError(response, '获取图书申请失败');
     }
 
     return await response.json();
   },
-};
+});
 // 新增申请
 export const addApplicationMutation = {
   mutationKey: ['applications', 'add'],

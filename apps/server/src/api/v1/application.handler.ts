@@ -8,7 +8,7 @@ import { applicationDialogSchema } from '@repo/types/src/application/application
 import { applicationReviewSchema } from '@repo/types/src/application/applicationReview.type';
 import { applicationUpdateSchema } from '@repo/types/src/application/applicationUpdate.type';
 import dayjs from 'dayjs';
-import { asc, eq, sql ,and,ne} from 'drizzle-orm';
+import { asc, eq, sql ,and,ne,ilike,or} from 'drizzle-orm';
 import {
   badRequest,
   errorSchema,
@@ -22,7 +22,11 @@ const app = new OpenAPIHono();
 export const listApplicationRoute = createRoute({
   method: 'get',
   path: '/applications',
-  request: {},
+  request: {
+    query:z.object({
+      keyword: z.string().optional(),
+    })
+  },
   responses: {
     200: {
       content: {
@@ -143,11 +147,18 @@ export const applicationApp = app
       throw unauthorized();
     }
     if(session.user.role === 'reader') {
+      const { keyword } = c.req.valid('query');
+      const search = keyword?.trim();
       // 只能查看自己的申请
       const applications = await db
         .select()
         .from(borrowApplications)
-        .where(eq(borrowApplications.userId, session.user.id))
+        .where(
+          and(
+            eq(borrowApplications.userId, session.user.id),
+            search ? ilike(books.title, `%${search}%`) : undefined,
+          ),
+        )
         .leftJoin(books, eq(borrowApplications.bookId, books.id))
         .leftJoin(user, eq(borrowApplications.userId, user.id))
         .orderBy(asc(borrowApplications.createdAt));
@@ -160,9 +171,16 @@ export const applicationApp = app
       });
       return c.json(result, 200);
     }else {
+      const { keyword } = c.req.valid('query');
+      const search = keyword?.trim();
       const applications = await db
         .select()
         .from(borrowApplications)
+        .where(search ? 
+          or(
+            ilike(books.title, `%${search}%`),
+            ilike(user.name, `%${search}%`)
+          ) : undefined)
         .leftJoin(books, eq(borrowApplications.bookId, books.id))
         .leftJoin(user, eq(borrowApplications.userId, user.id))
         .orderBy(asc(borrowApplications.createdAt));
