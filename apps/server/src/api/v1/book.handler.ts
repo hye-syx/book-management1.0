@@ -6,7 +6,7 @@ import { bookSchema } from '@repo/types/src/book/book.type';
 import { categorySchema } from '@repo/types/src/book/category.type';
 import { updateBookSchema } from '@repo/types/src/book/update.type';
 import dayjs from 'dayjs';
-import { asc, eq } from 'drizzle-orm';
+import { asc, eq, ilike, or } from 'drizzle-orm';
 
 import {
   badRequest,
@@ -21,7 +21,11 @@ const app = new OpenAPIHono();
 export const listBookRoute = createRoute({
   method: 'get',
   path: '/books',
-  request: {},
+  request: {
+    query: z.object({
+      keyword: z.string().optional(),
+    }),
+  },
   responses: {
     200: {
       content: {
@@ -234,10 +238,21 @@ export const bookApp = app
     if (!session) {
       throw unauthorized();
     }
+    const {keyword} = c.req.valid('query');
+    const search = keyword?.trim();
     const listBook = await db
       .select()
       .from(books)
       .leftJoin(bookCategory, eq(books.categoryId, bookCategory.id))
+      .where(
+        search
+          ? or(
+              ilike(books.title, `%${search}%`),
+              ilike(books.author, `%${search}%`),
+              ilike(books.isbn, `%${search}%`),
+            )
+          : undefined,
+      )
       .orderBy(asc(books.createdAt));
     return c.json(listBook, 200);
   })

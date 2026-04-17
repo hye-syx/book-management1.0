@@ -19,11 +19,11 @@ export const getBookQuery = (id: number) => ({
 });
 
 //获取全部图书
-export const listBookQuery = {
-  queryKey: ['books', 'all'],
+export const listBookQuery = (keyword:string)=>({
+  queryKey: ['books', 'list',keyword],
   queryFn: async () => {
     const response = await apiClient.books.$get({
-      query: {},
+      query:{ keyword },
     });
     if (!response.ok) {
       return throwApiError(response, '获取图书失败');
@@ -31,7 +31,7 @@ export const listBookQuery = {
 
     return await response.json();
   },
-};
+});
 //删除图书
 export const deleteBookMutation = {
   mutationKey: ['books', 'delete'],

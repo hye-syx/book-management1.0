@@ -15,6 +15,8 @@ import { ApplicationBookDialog } from '../borrow-application/application-book-di
 import { Button } from '../ui/button';
 import { EditBookDialog } from './edit-book-dialog';
 import { toast } from 'sonner';
+import { Input } from '../ui/input';
+import { Search } from 'lucide-react';
 
 export function TableDemo() {
   // 获取点击编辑时图书的id
@@ -48,52 +50,71 @@ export function TableDemo() {
   const handleDelete = (id: number) => {
     deleteMutation.mutate(id);
   };
+  const [keyword, setKeyword] = useState('');
   //  获取图书列表
   const { data: books } = useQuery({
-    ...listBookQuery,
+    ...listBookQuery(keyword),
   });
 
   return (
-    <div className='rounded-lg border border-gray-200 overflow-hidden'>
-      <Table className='min-full'>
-        {/* <TableCaption>A list of your recent invoices.</TableCaption> */}
-        <TableHeader>
-          <TableRow>
-            <TableHead className='w-[100px]'>ISBN编码</TableHead>
-            <TableHead>书名</TableHead>
-            <TableHead>作者</TableHead>
-            <TableHead>出版社</TableHead>
-            <TableHead>出版时间</TableHead>
-            <TableHead>图书类别</TableHead>
-            <TableHead>价格</TableHead>
-            <TableHead>总量</TableHead>
-            <TableHead>可借数量</TableHead>
-            <TableHead>借阅状态</TableHead>
-            <TableHead>录入时间</TableHead>
-            <TableHead className='text-center'>操作</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {books?.map((book) => (
-            <TableRow key={book.id}>
-              <TableCell className='font-medium'>{book.books.isbn}</TableCell>
-              <TableCell>{book.books.title}</TableCell>
-              <TableCell>{book.books.author}</TableCell>
-              <TableCell>{book.books.publisher}</TableCell>
-              <TableCell>
-                {dayjs.unix(book.books.publicationDate).format('YYYY-MM-DD')}
-              </TableCell>
-              <TableCell>{book.book_category.name}</TableCell>
-              <TableCell>{book.books.price}</TableCell>
-              <TableCell>{book.books.total}</TableCell>
-              <TableCell>{book.books.available}</TableCell>
-              <TableCell>{book.books.status}</TableCell>
-              <TableCell>
-                {dayjs.unix(book.books.createdAt).format('YYYY-MM-DD HH:mm:ss')}
-              </TableCell>
-              <TableCell className='text-center'>
-                {
-                  role!=='reader' && (
+    <>
+      <div className='border-b bg-white px-6 pt-6 pb-5'>
+        <h1 className='text-2xl font-bold tracking-tight text-gray-900'>
+          图书管理
+        </h1>
+        <p className='mt-1 text-sm text-gray-500'>搜索并查看图书信息</p>
+
+        <div className='mt-5 relative w-full'>
+          <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+          <Input
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            placeholder='搜索书名 / 作者 / ISBN'
+            className='h-9 w-full rounded-md border-gray-200 bg-white pl-9 pr-3 text-sm shadow-none'
+          />
+        </div>
+      </div>
+      <div className='rounded-lg border border-gray-200 overflow-hidden'>
+        <Table className='min-full'>
+          {/* <TableCaption>A list of your recent invoices.</TableCaption> */}
+          <TableHeader>
+            <TableRow>
+              <TableHead className='w-[100px]'>ISBN编码</TableHead>
+              <TableHead>书名</TableHead>
+              <TableHead>作者</TableHead>
+              <TableHead>出版社</TableHead>
+              <TableHead>出版时间</TableHead>
+              <TableHead>图书类别</TableHead>
+              <TableHead>价格</TableHead>
+              <TableHead>总量</TableHead>
+              <TableHead>可借数量</TableHead>
+              <TableHead>借阅状态</TableHead>
+              <TableHead>录入时间</TableHead>
+              <TableHead className='text-center'>操作</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {books?.map((book) => (
+              <TableRow key={book.id}>
+                <TableCell className='font-medium'>{book.books.isbn}</TableCell>
+                <TableCell>{book.books.title}</TableCell>
+                <TableCell>{book.books.author}</TableCell>
+                <TableCell>{book.books.publisher}</TableCell>
+                <TableCell>
+                  {dayjs.unix(book.books.publicationDate).format('YYYY-MM-DD')}
+                </TableCell>
+                <TableCell>{book.book_category.name}</TableCell>
+                <TableCell>{book.books.price}</TableCell>
+                <TableCell>{book.books.total}</TableCell>
+                <TableCell>{book.books.available}</TableCell>
+                <TableCell>{book.books.status}</TableCell>
+                <TableCell>
+                  {dayjs
+                    .unix(book.books.createdAt)
+                    .format('YYYY-MM-DD HH:mm:ss')}
+                </TableCell>
+                <TableCell className='text-center'>
+                  {role !== 'reader' && (
                     <>
                       <Button
                         onClick={() => {
@@ -113,39 +134,39 @@ export function TableDemo() {
                         删除
                       </Button>
                     </>
-                  )
-                }
+                  )}
 
-                <Button
-                  onClick={() => {
-                    // setApplicationBookId(book.books.id);
-                    // setApplicationDialogOpen(true);
-                    handleApplicationClose(true, book.books.id);
-                  }}
-                >
-                  借阅
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <EditBookDialog
-        bookId={editingBookId}
-        onOpenChange={(open) => {
-          setEditDialogOpen(open);
-        }}
-        open={editDialogOpen}
-      />
-      <ApplicationBookDialog
-        bookId={applicationBookId}
-        onOpenChange={(open) => {
-          setApplicationDialogOpen(open);
-        }}
-        open={applicationDialogOpen}
-        userId={session?.user?.id || ''}
-        userName={session?.user?.name || ''}
-      />
-    </div>
+                  <Button
+                    onClick={() => {
+                      // setApplicationBookId(book.books.id);
+                      // setApplicationDialogOpen(true);
+                      handleApplicationClose(true, book.books.id);
+                    }}
+                  >
+                    借阅
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        <EditBookDialog
+          bookId={editingBookId}
+          onOpenChange={(open) => {
+            setEditDialogOpen(open);
+          }}
+          open={editDialogOpen}
+        />
+        <ApplicationBookDialog
+          bookId={applicationBookId}
+          onOpenChange={(open) => {
+            setApplicationDialogOpen(open);
+          }}
+          open={applicationDialogOpen}
+          userId={session?.user?.id || ''}
+          userName={session?.user?.name || ''}
+        />
+      </div>
+    </>
   );
 }
