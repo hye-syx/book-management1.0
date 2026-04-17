@@ -2,16 +2,20 @@ import { apiClient } from "#/lib/api-client";
 import { throwApiError } from "#/lib/api-error";
 import type { UpdateRecordRequest } from "@repo/types/src/record/update-record.type";
 
-export const listRecordsQuery = {
-  queryKey: ['records', 'all'],
+export const listRecordsQuery =(keyword:string)=>({
+  queryKey: ['records', 'all',keyword],
   queryFn: async () => {
-    const response = await apiClient.records.$get();
+    const response = await apiClient.records.$get({
+      query: {
+        keyword,
+      },
+    });
     if (!response.ok) {
       return throwApiError(response, '获取借阅记录失败');
     }
     return await response.json();
   },
-};
+});
 export const deleteRecordsMutation = {
   mutationKey:['records','delete'],
   mutationFn: async (id: number) => {

@@ -6,7 +6,7 @@ import { borrowRecords } from '@repo/db/schema/borrow-schema';
 import { recordSchema } from '@repo/types/src/record/record.type';
 import { updateRecordSchema } from '@repo/types/src/record/update-record.type';
 import dayjs from 'dayjs';
-import { eq, sql } from 'drizzle-orm';
+import { eq, sql ,and,ilike,or} from 'drizzle-orm';
 import {
   conflict,
   errorSchema,
@@ -21,7 +21,11 @@ const app = new OpenAPIHono();
 export const listRecordsRoute = createRoute({
   method: 'get',
   path: '/records',
-  request: {},
+  request: {
+    query: z.object({
+      keyword: z.string().optional(),
+    }),
+  },
   responses: {
     200: {
       content: {
@@ -209,11 +213,18 @@ export const recordsApp = app
     if (!session) {
       throw unauthorized();
     }
+    const { keyword } = c.req.valid('query');
+    const search = keyword?.trim();
     if (session.user.role === 'reader') {
       const records = await db
         .select()
         .from(borrowRecords)
-        .where(eq(borrowRecords.userId, session.user.id))
+        .where(
+          and(
+            eq(borrowRecords.userId, session.user.id),
+            search ? or(ilike(books.title, `%${search}%`)) : undefined,
+          ),
+        )
         .leftJoin(books, eq(borrowRecords.bookId, books.id))
         .leftJoin(user, eq(borrowRecords.userId, user.id))
         .orderBy(borrowRecords.createdAt);
@@ -226,9 +237,19 @@ export const recordsApp = app
       });
       return c.json(result, 200);
     } else {
+      const { keyword } = c.req.valid('query');
+      const search = keyword?.trim();
       const records = await db
         .select()
         .from(borrowRecords)
+        .where(
+          search
+            ? or(
+                ilike(books.title, `%${search}%`),
+                ilike(user.name, `%${search}%`),
+              )
+            : undefined,
+        )
         .leftJoin(books, eq(borrowRecords.bookId, books.id))
         .leftJoin(user, eq(borrowRecords.userId, user.id))
         .orderBy(borrowRecords.createdAt);
