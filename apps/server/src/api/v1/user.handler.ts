@@ -1,6 +1,6 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { db } from '@repo/db';
-import { eq } from 'drizzle-orm';
+import { eq,or,ilike } from 'drizzle-orm';
 import { user } from '@repo/db/schema/auth-schema';
 import { userSchema } from '@repo/types/src/user/user.type';
 import { updateUserSchema } from '@repo/types/src/user/update-user.type';
@@ -16,6 +16,11 @@ const app = new OpenAPIHono();
 export const listUserRoute = createRoute({
   method: 'get',
   path: '/user',
+  request: {
+    query: z.object({
+      keyword: z.string().optional(),
+    }),
+  },
   responses: {
     200: {
       content: {
@@ -170,7 +175,17 @@ export const userApp = app
     if (session.user.role !== 'admin') {
       throw forbidden('权限不足');
     }
-    const users = await db.select().from(user);
+    const { keyword } = c.req.valid('query');
+    const search = keyword?.trim();
+    const users = await db.select().from(user)
+    .where(
+      search
+        ? or(
+          ilike(user.name, `%${search}%`),
+          ilike(user.email, `%${search}%`)
+        )
+        : undefined
+    )
     return c.json(users, 200);
   })
   .openapi(updateUserRoute, async (c) => {

@@ -2,10 +2,12 @@ import { apiClient } from "#/lib/api-client";
 import { throwApiError } from "#/lib/api-error";
 import type { UpdateUserRequest } from "@repo/types/src/user/update-user.type";
 
-export const listUserQuery ={
-    queryKey: ['user','all'],
+export const listUserQuery = (keyword: string) => ({
+    queryKey: ['user','all',keyword],
     queryFn: async () => {
-     const response = await apiClient.user.$get();
+     const response = await apiClient.user.$get({
+      query: { keyword },
+     });
     if (!response.ok) {
       return throwApiError(response, '获取用户列表失败');
     }
@@ -13,7 +15,7 @@ export const listUserQuery ={
     return await response.json();
     },
 
-};
+});
 export const getUserQuery = (userId: string) => ({
     queryKey: ['user', userId],
     queryFn: async () => {
