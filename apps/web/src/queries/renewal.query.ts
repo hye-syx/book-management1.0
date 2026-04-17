@@ -1,16 +1,18 @@
 import { apiClient } from "#/lib/api-client";
 import { throwApiError } from "#/lib/api-error";
 
-export const listRenewalQuery = {
-  queryKey: ['renewals', 'all'],
+export const listRenewalQuery = (keyword:string) => ({
+  queryKey: ['renewals', 'all', keyword],
   queryFn: async () => {
-    const response = await apiClient.renewal.$get();
+    const response = await apiClient.renewal.$get({
+      query:{keyword},
+    });
     if (!response.ok) {
       return throwApiError(response, '获取续借记录失败');
     }
     return await response.json();
   },
-};
+});
 
 export const addRenewalMutation = {
   mutationFn: async (id: number) => {

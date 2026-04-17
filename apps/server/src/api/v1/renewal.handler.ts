@@ -3,7 +3,7 @@ import { db } from '@repo/db';
 import { renewalRecords } from '@repo/db/schema/borrow-schema';
 import { renewalSchema } from '@repo/types/src/renewal/renewal.type';
 import { getSession } from 'server/src/lib/get-session';
-import { eq, asc } from 'drizzle-orm';
+import { eq, asc,and,ilike,or} from 'drizzle-orm';
 import { books } from '@repo/db/schema/book-schema';
 import { user } from '@repo/db/schema/auth-schema';
 import dayjs from 'dayjs';
@@ -23,7 +23,11 @@ const app = new OpenAPIHono();
 export const listRenewal = createRoute({
   method: 'get',
   path: '/renewal',
-  request: {},
+  request: {
+    query: z.object({
+      keyword: z.string().optional(),
+    }),
+  },
   responses: {
     200: {
       content: {
@@ -105,14 +109,15 @@ export const renewalApp =app
         throw unauthorized();
       }
        if (session.user.role === 'reader') {
+            const { keyword } = c.req.valid('query');
+            const search = keyword?.trim();
             const renewals = await db
-            .select()
-            .from(renewalRecords)
-            .where(eq(renewalRecords.userId, session.user.id))
-            .leftJoin(books,eq(renewalRecords.bookId,books.id))
-            .leftJoin(user,eq(renewalRecords.userId,user.id))
-            .orderBy(asc(renewalRecords.createdAt))
-            ;
+              .select()
+              .from(renewalRecords)
+              .where(and(eq(renewalRecords.userId, session.user.id), search ? ilike(books.title, `%${search}%`) : undefined))
+              .leftJoin(books, eq(renewalRecords.bookId, books.id))
+              .leftJoin(user, eq(renewalRecords.userId, user.id))
+              .orderBy(asc(renewalRecords.createdAt));
             const result = renewals.map((renewal) => {
               return {
                 ...renewal.renewal_records,
@@ -123,9 +128,16 @@ export const renewalApp =app
             return c.json(result, 200);
           } 
           else {
+            const { keyword } = c.req.valid('query');
+            const search = keyword?.trim();
             const renewals = await db
               .select()
               .from(renewalRecords)
+              .where(search ? 
+                or(
+                  ilike(books.title, `%${search}%`),
+                  ilike(user.name, `%${search}%`)
+                ) : undefined)
               .leftJoin(books, eq(renewalRecords.bookId, books.id))
               .leftJoin(user, eq(renewalRecords.userId, user.id))
               .orderBy(asc(renewalRecords.createdAt));
