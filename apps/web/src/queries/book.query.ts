@@ -75,6 +75,20 @@ export const addBookMutation = {
     return await response.json();
   },
 };
+// 批量导入图书
+export const batchAddBookMutation = {
+  mutationKey: ['books', 'batch-add'],
+  mutationFn: async (payload: AddBookType.BatchAddBookRequest) => {
+    const response = await apiClient.books.batch.$post({
+      json: payload,
+    });
+    if (!response.ok) {
+      return throwApiError(response, '批量导入图书失败');
+    }
+
+    return await response.json();
+  },
+};
 //
 export const listBookByCategoryQuery = {
   queryKey: ['category', 'list'],

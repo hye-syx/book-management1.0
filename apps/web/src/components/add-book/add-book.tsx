@@ -27,6 +27,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useState } from 'react';
+import { BatchImportBookDialog } from './batch-import-book-dialog';
 
 const formSchema = z.object({
   isbn: z.string().min(1, 'ISBN is required'),
@@ -44,6 +46,7 @@ const formSchema = z.object({
 });
 
 export function AddBookForm() {
+  const [batchImportOpen, setBatchImportOpen] = useState(false);
   const { data: categoryData } = useListCategory();
   const addMutation = useMutation({
     ...addBookMutation,
@@ -98,295 +101,310 @@ export function AddBookForm() {
   });
 
   return (
-    <Card className='w-full max-w-3xl'>
-      <CardHeader>
-        <Button size='sm' className='w-fit'>
-          批量增加
-        </Button>
-      </CardHeader>
-      <CardContent>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            form.handleSubmit();
-          }}
-        >
-          <FieldGroup className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            <form.Field name='isbn'>
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>isbn编码</FieldLabel>
-
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid}
-                      placeholder='请输入编码'
-                      autoComplete='off'
-                    />
-
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                );
-              }}
-            </form.Field>
-            <form.Field name='title'>
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>书名</FieldLabel>
-
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid}
-                      placeholder='请输入书名'
-                      autoComplete='off'
-                    />
-
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                );
-              }}
-            </form.Field>
-            <form.Field name='author'>
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>作者</FieldLabel>
-
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid}
-                      placeholder='请输入作者'
-                      autoComplete='off'
-                    />
-
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                );
-              }}
-            </form.Field>
-            <form.Field name='publisher'>
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>出版社</FieldLabel>
-
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid}
-                      placeholder='请输入出版社'
-                      autoComplete='off'
-                    />
-
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                );
-              }}
-            </form.Field>
-            <form.Field name='publicationDate'>
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>出版日期</FieldLabel>
-
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      type='date'
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid}
-                      autoComplete='off'
-                    />
-
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                );
-              }}
-            </form.Field>
-            <form.Field name='categoryId'>
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>分类</FieldLabel>
-                    <Select
-                      value={field.state.value}
-                      onValueChange={(value) => field.handleChange(value)}
-                    >
-                      <SelectTrigger
-                        id={field.name}
-                        className='w-full'
-                        aria-invalid={isInvalid}
-                      >
-                        <SelectValue placeholder='请选择分类' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categoryData?.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                );
-              }}
-            </form.Field>
-            <form.Field name='price'>
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>价格</FieldLabel>
-
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) =>
-                        field.handleChange(Number(e.target.value))
-                      }
-                      aria-invalid={isInvalid}
-                      placeholder='请输入价格'
-                      autoComplete='off'
-                    />
-
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                );
-              }}
-            </form.Field>
-            <form.Field name='total'>
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>总数</FieldLabel>
-
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) =>
-                        field.handleChange(Number(e.target.value))
-                      }
-                      aria-invalid={isInvalid}
-                      placeholder='请输入总数'
-                      autoComplete='off'
-                    />
-
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                );
-              }}
-            </form.Field>
-            <form.Field name='status'>
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>状态</FieldLabel>
-                    <Select
-                      value={field.state.value}
-                      onValueChange={(value) => field.handleChange(value)}
-                    >
-                      <SelectTrigger className='w-full'>
-                        <SelectValue placeholder='请选择借阅状态' />
-                      </SelectTrigger>
-
-                      <SelectContent>
-                        <SelectItem value='在馆'>在馆</SelectItem>
-                        <SelectItem value='借出'>借出</SelectItem>
-                        <SelectItem value='遗失'>遗失</SelectItem>
-                        <SelectItem value='损坏'>损坏</SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                );
-              }}
-            </form.Field>
-          </FieldGroup>
-        </form>
-      </CardContent>
-      <CardFooter>
-        <Field className='flex justify-end gap-2' orientation='horizontal'>
-          <Button type='button' variant='outline' onClick={() => form.reset()}>
-            重置
-          </Button>
+    <>
+      <Card className='w-full max-w-3xl'>
+        <CardHeader>
+          <div>
+            <h2 className='text-lg font-semibold'>新增图书</h2>
+          </div>
           <Button
-            type='submit'
-            onClick={() => form.handleSubmit()}
+            size='sm'
+            type='button'
+            variant='outline'
+            onClick={() => setBatchImportOpen(true)}
           >
-            提交
+            批量导入
           </Button>
-        </Field>
-      </CardFooter>
-    </Card>
+        </CardHeader>
+        <CardContent>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              form.handleSubmit();
+            }}
+          >
+            <FieldGroup className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              <form.Field name='isbn'>
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>isbn编码</FieldLabel>
+
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isInvalid}
+                        placeholder='请输入编码'
+                        autoComplete='off'
+                      />
+
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              </form.Field>
+              <form.Field name='title'>
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>书名</FieldLabel>
+
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isInvalid}
+                        placeholder='请输入书名'
+                        autoComplete='off'
+                      />
+
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              </form.Field>
+              <form.Field name='author'>
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>作者</FieldLabel>
+
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isInvalid}
+                        placeholder='请输入作者'
+                        autoComplete='off'
+                      />
+
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              </form.Field>
+              <form.Field name='publisher'>
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>出版社</FieldLabel>
+
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isInvalid}
+                        placeholder='请输入出版社'
+                        autoComplete='off'
+                      />
+
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              </form.Field>
+              <form.Field name='publicationDate'>
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>出版日期</FieldLabel>
+
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        type='date'
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isInvalid}
+                        autoComplete='off'
+                      />
+
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              </form.Field>
+              <form.Field name='categoryId'>
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>分类</FieldLabel>
+                      <Select
+                        value={field.state.value}
+                        onValueChange={(value) => field.handleChange(value)}
+                      >
+                        <SelectTrigger
+                          id={field.name}
+                          className='w-full'
+                          aria-invalid={isInvalid}
+                        >
+                          <SelectValue placeholder='请选择分类' />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categoryData?.map((category) => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              </form.Field>
+              <form.Field name='price'>
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>价格</FieldLabel>
+
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) =>
+                          field.handleChange(Number(e.target.value))
+                        }
+                        aria-invalid={isInvalid}
+                        placeholder='请输入价格'
+                        autoComplete='off'
+                      />
+
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              </form.Field>
+              <form.Field name='total'>
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>总数</FieldLabel>
+
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) =>
+                          field.handleChange(Number(e.target.value))
+                        }
+                        aria-invalid={isInvalid}
+                        placeholder='请输入总数'
+                        autoComplete='off'
+                      />
+
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              </form.Field>
+              <form.Field name='status'>
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>状态</FieldLabel>
+                      <Select
+                        value={field.state.value}
+                        onValueChange={(value) => field.handleChange(value)}
+                      >
+                        <SelectTrigger className='w-full'>
+                          <SelectValue placeholder='请选择借阅状态' />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          <SelectItem value='在馆'>在馆</SelectItem>
+                          <SelectItem value='借出'>借出</SelectItem>
+                          <SelectItem value='遗失'>遗失</SelectItem>
+                          <SelectItem value='损坏'>损坏</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              </form.Field>
+            </FieldGroup>
+          </form>
+        </CardContent>
+        <CardFooter>
+          <Field className='flex justify-end gap-2' orientation='horizontal'>
+            <Button
+              type='button'
+              variant='outline'
+              onClick={() => form.reset()}
+            >
+              重置
+            </Button>
+            <Button type='submit' onClick={() => form.handleSubmit()}>
+              提交
+            </Button>
+          </Field>
+        </CardFooter>
+      </Card>
+      <BatchImportBookDialog
+        open={batchImportOpen}
+        onOpenChange={setBatchImportOpen}
+      />
+    </>
   );
 }
