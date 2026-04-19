@@ -1,7 +1,7 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { db } from '@repo/db';
 import { bookCategory, books } from '@repo/db/schema/book-schema';
-import { addBookSchema } from '@repo/types/src/book/addBook.type';
+import { addBookSchema, batchAddBookResultSchema, batchAddBookSchema } from '@repo/types/src/book/addBook.type';
 import { bookSchema } from '@repo/types/src/book/book.type';
 import { categorySchema } from '@repo/types/src/book/category.type';
 import { updateBookSchema } from '@repo/types/src/book/update.type';
@@ -208,6 +208,56 @@ export const createBookRoute = createRoute({
     },
   },
 });
+// 批量导入图书
+export const batchCreateBookRoute = createRoute({
+  method: 'post',
+  path: '/books/batch',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: batchAddBookSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: batchAddBookResultSchema,
+        },
+      },
+      description: '批量导入图书成功',
+    },
+    401: {
+      content: {
+        'application/json': {
+          schema: errorSchema,
+        },
+      },
+      description: '未登录',
+    },
+    400: {
+      content: {
+        'application/json': {
+          schema: errorSchema,
+        },
+      },
+      description: '参数错误',
+    },
+    403: {
+      content: {
+        'application/json': {
+          schema: errorSchema,
+        },
+      },
+      description: '没有权限',
+    },
+  },
+});
+
+
 // 查询所有分类信息
 export const listCategoryRoute = createRoute({
   method: 'get',
@@ -348,6 +398,98 @@ export const bookApp = app
     }
     const categories = await db.select().from(bookCategory);
     return c.json(categories, 200);
+  })
+  .openapi(batchCreateBookRoute, async (c) => {
+    const session = await getSession(c.req.raw.headers);
+    if (!session) {
+      throw unauthorized();
+    }
+    if (session.user.role === 'reader') {
+      throw forbidden();
+    }
+    const body = await c.req.json();
+    const { items } = batchAddBookSchema.parse(body);
+    if (items.length === 0) {
+      throw badRequest('至少导入一条图书数据');
+    }
+
+    const usedIsbns: string[] = [];
+    const failures: { row: number; reason: string }[] = [];
+    const validItems: typeof items = [];
+    items.forEach((item, index) => {
+      const isbn = item.isbn.trim();
+      const row = index + 2;
+      if (usedIsbns.includes(isbn)) {
+        failures.push({
+          row,
+          reason: 'ISBN重复',
+        });
+        return;
+      }
+      if (item.total <= 0) {
+        failures.push({
+          row,
+          reason: '库存数量不能为负数或0',
+        });
+        return;
+      }
+
+      usedIsbns.push(isbn);
+      validItems.push({
+        ...item,
+        isbn,
+      });
+    });
+
+    const finalItems: typeof validItems = [];
+    for (const item of validItems) {
+      const existingBooks = await db
+        .select()
+        .from(books)
+        .where(eq(books.isbn, item.isbn));
+
+      if (existingBooks.length > 0) {
+        const row =
+          items.findIndex((book) => book.isbn.trim() === item.isbn) + 2;
+
+        failures.push({
+          row,
+          reason: 'ISBN已存在',
+        });
+        continue;
+      }
+
+      finalItems.push(item);
+    }
+
+    if (finalItems.length === 0) {
+      return c.json(
+        {
+          successCount: 0,
+          failureCount: failures.length,
+          failures,
+        },
+        200,
+      );
+    }
+
+    const values = finalItems.map((item) => ({
+      ...item,
+      available: item.total,
+      createdAt: dayjs().unix(),
+      updatedAt: dayjs().unix(),
+    }));
+
+    await db.insert(books).values(values);
+
+    return c.json(
+      {
+        successCount: values.length,
+        failureCount: failures.length,
+        failures,
+      },
+      200,
+    );
   });
 
 export type BookAppType = typeof bookApp;
