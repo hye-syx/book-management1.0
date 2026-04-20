@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { deleteRecordsMutation, listRecordsQuery, returnBookMutation } from '#/queries/record.query';
+import * as XLSX from 'xlsx';
 import {
   Table,
   TableBody,
@@ -60,14 +61,48 @@ const deleteRecordMutation = useMutation({
       toast.error(error.message)
     }
   });
+  const handleExport = () => {
+    if (!records || records.length === 0) {
+      toast.error('当前没有可导出的借阅记录');
+      return;
+    }
+
+    const exportData = records.map((record) => ({
+      申请人: record.userName,
+      图书名称: record.bookTitle,
+      申请日期: dayjs.unix(record.borrowDate).format('YYYY-MM-DD HH:mm:ss'),
+      归还日期: dayjs.unix(record.returnDate).format('YYYY-MM-DD HH:mm:ss'),
+      实际归还日期: record.actualReturnDate
+        ? dayjs.unix(record.actualReturnDate).format('YYYY-MM-DD HH:mm:ss')
+        : '未归还',
+      逾期天数: record.overdueDays,
+      状态: record.status,
+      借阅数量: record.borrowTotal,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, '借阅记录');
+    XLSX.writeFileXLSX(
+      workbook,
+      `borrow-records-${dayjs().format('YYYYMMDD-HHmmss')}.xlsx`,
+    );
+  };
   // 
   return (
     <>
      <div className='border-b bg-white px-6 pt-6 pb-5'>
-            <h1 className='text-2xl font-bold tracking-tight text-gray-900'>
-              借阅记录管理
-            </h1>
-            <p className='mt-1 text-sm text-gray-500'>搜索并查看借阅记录</p>
+            <div className='flex items-start justify-between gap-4'>
+              <div>
+                <h1 className='text-2xl font-bold tracking-tight text-gray-900'>
+                  借阅记录管理
+                </h1>
+                <p className='mt-1 text-sm text-gray-500'>搜索并查看借阅记录</p>
+              </div>
+              <Button type='button' variant='outline' onClick={handleExport}>
+                导出记录
+              </Button>
+            </div>
     
             <div className='mt-5 relative w-full'>
               <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
