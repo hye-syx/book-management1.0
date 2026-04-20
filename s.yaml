@@ -25,6 +25,7 @@ resources:
         DATABASE_URL: ${env(DATABASE_URL)}
         BETTER_AUTH_SECRET: ${env(BETTER_AUTH_SECRET)}
         BETTER_AUTH_URL: ${env(BETTER_AUTH_URL)}
+        FRONTEND_ORIGIN: ${env(FRONTEND_ORIGIN)}
       triggers:
         - triggerName: httpTrigger
           triggerType: http
@@ -49,6 +50,9 @@ resources:
       handler: index.handler
       memorySize: 1024
       timeout: 300
+      environmentVariables:
+        NODE_ENV: production
+        API_BACKEND_URL: ${env(API_BACKEND_URL)}
       triggers:
         - triggerName: httpTrigger
           triggerType: http

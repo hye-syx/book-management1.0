@@ -6,12 +6,18 @@ import { initRoutes } from './api/route';
 import { startOverdueRecordsScheduler } from './jobs/overdue-records.job';
 import { auth } from './lib/auth';
 
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN;
+
 function createApp() {
   const app = new OpenAPIHono();
 
+  if (!FRONTEND_ORIGIN) {
+    throw new Error('FRONTEND_ORIGIN 环境变量未设置');
+  }
+
   app.use(
     cors({
-      origin: ['http://localhost:3000'],
+      origin: [FRONTEND_ORIGIN],
       allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowHeaders: ['Content-Type'],
       credentials: true,
