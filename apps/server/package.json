@@ -4,7 +4,8 @@
     "./api/route": "./src/api/route.ts"
   },
   "scripts": {
-    "dev": "bun run --hot src/index.ts"
+    "dev": "bun run --hot src/index.ts",
+    "build": "NODE_ENV=production esbuild --bundle --outfile=./dist/index.js --platform=node --target=node20 --external:proxy-agent ./src/index.ts"
   },
   "dependencies": {
     "@hono/zod-openapi": "^1.2.4",

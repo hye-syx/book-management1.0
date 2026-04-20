@@ -1,0 +1,64 @@
+edition: 3.0.0
+name: book
+access: 'default'
+
+vars:
+  region: cn-shenzhen
+  serverFunctionName: 'book-server'
+  clientFunctionName: 'book-web'
+
+resources:
+  app-server:
+    component: fc3
+    props:
+      region: ${vars.region}
+      functionName: ${vars.serverFunctionName}
+      runtime: 'nodejs20'
+      code: ./apps/server/dist
+      handler: index.handler
+      cpu: 2
+      memorySize: 2048
+      diskSize: 512
+      timeout: 1800
+      environmentVariables:
+        NODE_ENV: production
+        DATABASE_URL: ${env(DATABASE_URL)}
+        BETTER_AUTH_SECRET: ${env(BETTER_AUTH_SECRET)}
+        BETTER_AUTH_URL: ${env(BETTER_AUTH_URL)}
+      triggers:
+        - triggerName: httpTrigger
+          triggerType: http
+          triggerConfig:
+            authType: anonymous
+            methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - HEAD
+              - OPTIONS
+
+  app-client:
+    component: fc3
+    props:
+      region: ${vars.region}
+      functionName: ${vars.clientFunctionName}
+      runtime: 'nodejs20'
+      code: ./apps/web/dist
+      handler: index.handler
+      memorySize: 1024
+      timeout: 300
+      triggers:
+        - triggerName: httpTrigger
+          triggerType: http
+          triggerConfig:
+            authType: anonymous
+            methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - HEAD
+              - OPTIONS
