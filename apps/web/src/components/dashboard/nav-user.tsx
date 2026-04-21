@@ -20,7 +20,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "#/components/ui/sidebar"
-import { authClient } from "#/lib/auth-client"
+import { authClient, clearStoredAuthToken } from "#/lib/auth-client"
 import { useNavigate } from "@tanstack/react-router"
 import { ChevronsUpDownIcon, SparklesIcon, BadgeCheckIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
 
@@ -77,6 +77,7 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={async () => {
               await authClient.signOut()
+              clearStoredAuthToken()
               navigate({to: '/auth/login'})
             }}>
               <LogOutIcon />

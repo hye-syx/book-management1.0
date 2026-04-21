@@ -1,6 +1,7 @@
 import { db } from '@repo/db'; // your drizzle instance
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { bearer } from 'better-auth/plugins';
 
 const BETTER_AUTH_URL = process.env.BETTER_AUTH_URL;
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN;
@@ -8,6 +9,7 @@ const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN;
 export const auth = betterAuth({
   baseURL: BETTER_AUTH_URL,
   trustedOrigins: FRONTEND_ORIGIN ? [FRONTEND_ORIGIN] : undefined,
+  plugins: [bearer()],
   database: drizzleAdapter(db, {
     provider: 'pg', // or "mysql", "sqlite"
   }),

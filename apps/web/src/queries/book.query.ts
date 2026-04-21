@@ -20,7 +20,7 @@ export const getBookQuery = (id: number) => ({
 
 //获取全部图书
 export const listBookQuery = (keyword:string)=>({
-  queryKey: ['books', 'list',keyword],
+  queryKey: ['books', 'all',keyword],
   queryFn: async () => {
     const response = await apiClient.books.$get({
       query:{ keyword },

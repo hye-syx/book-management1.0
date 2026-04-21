@@ -34,7 +34,7 @@ function getMimeType(filePath: string): string {
   return mimeTypes[ext] || 'application/octet-stream';
 }
 
-// API 代理：转发 /api 请求到后端
+// API 代理：转发 /api 请求到后端，覆盖认证和业务接口
 app.all('/api/*', async (c) => {
   if (!API_BACKEND_URL) {
     return c.json({ error: 'API_BACKEND_URL not configured' }, 500);

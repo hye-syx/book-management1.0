@@ -15,7 +15,7 @@ const config = defineConfig({
   ],
   server: {
     proxy: {
-      '/api/v1': {
+      '/api': {
         target: 'http://localhost:3001',
         changeOrigin: true,
       },
