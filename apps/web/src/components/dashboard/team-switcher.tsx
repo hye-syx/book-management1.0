@@ -13,7 +13,6 @@ export function TeamSwitcher({
   teams: {
     name: string
     logo: React.ReactNode
-    plan: string
   }[]
 }) {
   const { isMobile } = useSidebar()
@@ -23,19 +22,24 @@ export function TeamSwitcher({
   }
   return (
     <SidebarMenu>
-      <SidebarMenuItem>
-        <SidebarMenuButton
+      <SidebarMenuItem className='cursor-pointer'>
+        {/* <SidebarMenuButton
           size='lg'
           className='data-open:bg-sidebar-accent data-open:text-sidebar-accent-foreground'
-        >
-          <div className='flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground'>
+        > */}
+        <div className='flex items-center gap-2'>
+          <div
+            className='flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground [&_svg]:size-4
+  [&_svg]:shrink-0'
+          >
             {activeTeam.logo}
           </div>
           <div className='grid flex-1 text-left text-sm leading-tight'>
             <span className='truncate font-medium'>{activeTeam.name}</span>
-            <span className='truncate text-xs'>{activeTeam.plan}</span>
+            {/* <span className='truncate text-xs'>{activeTeam.plan}</span> */}
           </div>
-        </SidebarMenuButton>
+        </div>
+        {/* </SidebarMenuButton> */}
       </SidebarMenuItem>
     </SidebarMenu>
   );

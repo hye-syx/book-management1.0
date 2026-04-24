@@ -9,6 +9,7 @@ import {
 } from '#/components/ui/collapsible';
 import {
   SidebarGroup,
+  SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -21,9 +22,11 @@ import type { AppSidebarDataType } from './app-sidebar';
 export function NavMain({ items }: { items: AppSidebarDataType['navMain'] }) {
   return (
     <SidebarGroup>
-      {items.map((item) => (
-        <NavMainComponent key={item.title} items={item} />
-      ))}
+      <SidebarMenu>
+        {items.map((item) => (
+          <NavMainComponent key={item.title} items={item} />
+        ))}
+      </SidebarMenu>
     </SidebarGroup>
   );
 }
